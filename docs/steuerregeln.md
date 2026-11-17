@@ -48,6 +48,16 @@ sind konfigurierbar, im Code gibt es keine fachlichen Konstanten.
 | 6 | Onlinehandel 60.000 € + Prop 25.000 € + Prop 16.000 € | kumuliert 85.000 € (≥ 80 %) → 101.000 € (> 100.000 €) | Warnung bei V2 und V3; Umschaltvorschlag ab 15.09.2026 (V3); V3 danach: Kz 81 = 13.445,38, USt 2.554,62 | `Fall6_*` |
 | 7 | Änderung in festgeschriebenem Q1 | – | Exception; Storno nur in offenem Zeitraum, Protokoll mit Hash-Kette | `Fall7_*` |
 
+## Fristen und Auswertungen (Phase 4)
+
+| ID | Regel | Grundlage | Umsetzung | Test | Status |
+|---|---|---|---|---|---|
+| R-06 | VA-Fälligkeit = 10. Tag nach Ablauf des Voranmeldungszeitraums; mit Dauerfristverlängerung +1 Monat | §18 Abs. 1, §46 UStDV | `Fristen.VaFaelligkeit`, Einstellung `ust.va_frist_tag` (Startwert 10) | `FristenTests` | ungeprüft |
+| R-07 | Fällt die Frist auf Sa/So/Feiertag → nächster Werktag; nur **bundeseinheitliche** Feiertage | §108 Abs. 3 AO | `Feiertage` (Ostern nach Gauß/Meeus) | `FristenTests` (Q1/2020 → 14.04.2020) | validiert (Kalender), Landesfeiertage nicht berücksichtigt |
+| R-08 | KU: Voranmeldung nur für Zeiträume mit §13b-Steuer; Regelbesteuerung: jeder Zeitraum | §18 Abs. 4a UStG | `AuswertungService.Zahllasten` | `Zahllast_und_Fristen_*` | ungeprüft |
+| R-09 | EÜR nach Zahlungsprinzip; Fremdwährung mit BMF-Kurs des Zahlungsmonats oder Bankkurs; Kursdifferenz zur USt-Umrechnung separat | §11 EStG; O-13 | `AuswertungService.Euer` | `EUER_*` | ungeprüft |
+| R-10 | Gezahlte USt-Zahllast (bei KU: §13b-Steuer) als Betriebsausgabe, negative Zahllast als Einnahme | §4 Abs. 3 EStG; O-12 | Position „USt <Zeitraum>“ zur Fälligkeit | `EUER_USt_Zahlung_10_Tage_Regel` | ungeprüft |
+
 ## Offene und ungeprüfte Punkte
 
 | ID | Thema | Hinweis / aktuelle Umsetzung | Status |
@@ -62,6 +72,9 @@ sind konfigurierbar, im Code gibt es keine fachlichen Konstanten.
 | O-08 | Formularrundung | BMG-Kennzahlen im Formular in vollen Euro (Start: abschneiden, alternativ kaufmännisch), Steuer centgenau. Interne Werte bleiben centgenau. | ungeprüft |
 | O-09 | Onlinehandel: OSS / Fernverkäufe EU, B2C-Drittland | Laut Nutzer keine EU-B2C-Fernverkäufe → nicht umgesetzt. Bei Änderung neu bewerten. | geschlossen (nicht relevant) |
 | O-10 | Brutto/Netto-Interpretation eigener Umsätze bei Regelbesteuerung | Einstellung `betrag_ist.<Belegtyp>` = `BRUTTO` (Start) oder `NETTO`. | ungeprüft |
+| O-12 | Zahlungszeitpunkt der USt in der EÜR | Annahme Zahlung = Fälligkeit (keine Erfassung tatsächlicher FA-Zahlungen). Einstellung `euer.ust_zahlung`: `FAELLIGKEIT_10_TAGE` (Start; Fälligkeit bis 10.01. für Zeiträume des Vorjahres → Vorjahr, §11 Abs. 2 S. 2 EStG) oder `FAELLIGKEIT`. Verschobene Fälligkeiten (z. B. 12.01.) fallen ins neue Jahr. Ggf. später tatsächliche Zahlungen erfassen. | offen |
+| O-13 | EÜR-Umrechnung und Kursdifferenzen | `euer.kurs_quelle` = `Bmf` (Monatskurs des Zahlungsmonats) oder `Bank` (Kurs je Beleg). Kursdifferenz (EÜR-EUR − USt-EUR) wird nur nachrichtlich ausgewiesen, nicht separat gebucht. Steuerlich korrekte Umrechnung für die EÜR klären. | offen |
+| O-14 | Zeilen der Anlage EÜR | Bewusst **leer** angelegt; der Nutzer pflegt die Zuordnung je Jahr (Auswertungen › EÜR). | offen |
 | O-11 | Erstattung nach Wechsel der Besteuerungsart | Korrektur mit der Besteuerungsart des Ursprungsbelegs (inkl. Vorsteuer). Bei Wechsel KU ↔ Regel ggf. §15a/§17-Sonderfälle prüfen. | offen |
 
 ## Hinweise aus Phase 3 (Stammdaten)

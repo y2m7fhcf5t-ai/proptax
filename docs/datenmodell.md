@@ -135,3 +135,8 @@ erDiagram
 - `import_lauf.art` ∈ `BELEGE | KURSE`; `datei_sha256` verhindert unbeabsichtigten Doppelimport.
 - `csv_mapping_profil.profil_json` speichert das komplette Mapping (Trennzeichen, Formate, Spalten, Standardwerte).
 - `geschaeftspartner.kategorie = NULL` bedeutet ungeklärt; solche Belege sind nicht buchbar.
+
+## Nachträge Phase 4 (Schema v2)
+- `0002_auswertungen.sql` ergänzt Einstellungen, falls nicht vorhanden: `ust.va_frist_tag` (10), `ust19.warnschwelle` (0.8),
+  `euer.ust_zahlung` (`FAELLIGKEIT_10_TAGE`). Manueller Vorjahresumsatz: `ust19.vorjahresumsatz.<jahr>`.
+- `euer_zeilen_mapping` wird vom Nutzer gepflegt (leer ausgeliefert).

@@ -11,7 +11,7 @@ flowchart TB
   Eng["PropTax.TaxEngine<br/>Steuerermittlung, USt-VA-Aggregation, §19-Prüfung"]
   Dom["PropTax.Domain<br/>Entitäten, Wertobjekte (Money, CurrencyAmount), Enums"]
   App --> Anw
-  Anw --> Per & Eng & Dom
+  Anw --> Per & Eng & Dom & Rep
   Rep --> Dom
   Per --> Eng & Dom
   Eng --> Dom
@@ -22,8 +22,8 @@ flowchart TB
 | Domain | – | alles andere |
 | TaxEngine | Domain | Persistence, Reporting, App, Avalonia, EF Core, SQLite |
 | Persistence | Domain, TaxEngine | Application, App, Reporting, Avalonia |
-| Application | Domain, TaxEngine, Persistence | App, Avalonia |
-| Reporting | Domain (bekommt fertige Auswertungsmodelle) | App, Persistence |
+| Application | Domain, TaxEngine, Persistence, Reporting | App, Avalonia |
+| Reporting | Domain (eigene Report-DTOs: `NachweisBericht`, `Tabelle`) | Application, Persistence, TaxEngine, App |
 | App | Application (transitiv Domain/Engine-Typen) | Persistence, Microsoft.Data.Sqlite, Dapper |
 
 Die Regeln werden durch `tests/PropTax.ArchitectureTests` erzwungen. Dort ist auch das Verbot von
@@ -52,6 +52,14 @@ Die Regeln werden durch `tests/PropTax.ArchitectureTests` erzwungen. Dort ist au
 
 ![Belegmaske](bilder/belege.png)
 
+## Auswertungen (Phase 4)
+`AuswertungService` liest ausschließlich die gespeicherten Steuer-Snapshots (keine Neuberechnung) und liefert
+USt-VA mit Drill-down, Zahllast/Fristen, §19-Monitor, EÜR, Dashboard und Nachweis. `PropTax.Reporting` rendert
+PDF (QuestPDF, Community-Lizenz), XLSX (ClosedXML) und ZIP. Jeder Export wird protokolliert.
+
+![USt-VA](bilder/ustva.png)
+![Dashboard](bilder/dashboard.png)
+
 ## ERiC-Vorbereitung
 Die USt-VA wird als abstraktes Modell `UstVaDatensatz` (Zeitraum, Kennzahl → Betrag) erzeugt.
 Eine spätere Klasse `EricUebermittlung` in einem eigenen Projekt (`PropTax.Elster`) bindet die
@@ -59,5 +67,5 @@ ERiC-C-Bibliothek per P/Invoke an. Engine und UI bleiben dabei unverändert.
 
 ## Build & Auslieferung
 - Entwicklung und Tests: Linux oder Windows (`dotnet test`)
-- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 48 MB inkl. SQLite)
+- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 59 MB inkl. SQLite und QuestPDF; `IncludeAllContentForSelfExtract` bündelt die PDF-Schriften)
 - CI: `.github/workflows/build.yml` mit Tests auf Ubuntu, Publish und Smoke-Test (`--selftest`) auf `windows-latest`

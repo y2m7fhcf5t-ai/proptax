@@ -28,10 +28,11 @@ QuestPDF, ClosedXML, xUnit + coverlet.
 - `src/PropTax.TaxEngine` – Steuerlogik, Regelwerk-Startwerte (JSON), nur Domain
 - `src/PropTax.Persistence` – SQLite-Schema (`Schema/NNNN_*.sql`, eingebettet), Repositories, `Sitzung` (Unit of Work), DB-Protokoll
 - `src/PropTax.Application` – Use-Case-Services; Einstieg `Arbeitsbereich.Oeffne(datenordner)`
-- `src/PropTax.Reporting` – PDF/XLSX/CSV/DATEV (Phase 4/5, noch leer)
+- `src/PropTax.Reporting` – PDF (QuestPDF), XLSX (ClosedXML), ZIP, CSV; eigene DTOs, kennt nur Domain
 - `src/PropTax.App` – Avalonia-UI (Views + ViewModels), kennt nur Application
 - Tests: `TaxEngine.Tests` (Abnahme/ + Detail/, Gate ≥ 90 %), `Persistence.Tests` (Trigger, Schema),
-  `Application.Tests` (Gate ≥ 80 % für Application+Persistence), `App.Tests` (Headless-UI, xunit v3), `ArchitectureTests`
+  `Application.Tests` (Gate ≥ 80 % für Application+Persistence), `Reporting.Tests` (Gate ≥ 80 %),
+  `App.Tests` (Headless-UI, xunit v3), `ArchitectureTests`
 - Doku: `docs/architektur.md`, `docs/datenmodell.md`, `docs/steuerregeln.md`, `docs/adr/`, `docs/bilder/`
 - NuGet-Versionen zentral in `Directory.Packages.props`
 
@@ -42,7 +43,8 @@ dotnet test
 dotnet test tests/PropTax.TaxEngine.Tests        # inkl. Coverage-Report + Gate
 dotnet run --project src/PropTax.App
 dotnet run --project src/PropTax.App -- --selftest
-PROPTAX_SCREENSHOT=/pfad/belege.png dotnet test tests/PropTax.App.Tests   # Screenshot der Belegmaske
+PROPTAX_SCREENSHOT=/pfad/belege.png PROPTAX_SCREENSHOT_DIR=/pfad dotnet test tests/PropTax.App.Tests   # Screenshots
+PROPTAX_PDF=/pfad/nachweis.pdf dotnet test tests/PropTax.Reporting.Tests   # Beispiel-PDF
 dotnet publish src/PropTax.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
 ```
 CI: `.github/workflows/build.yml` (Ubuntu-Tests, Windows-Publish + Smoke-Test).
@@ -68,6 +70,12 @@ GitHub `y2m7fhcf5t-ai/proptax` (öffentlich), Branch `main`.
 - Fachliche Fehler als `FachlicherFehler` (UI zeigt sie in der Statusleiste); UI-Code ruft nie SQL.
 - Storno = eigener Beleg mit `storno_von_id`, negiertem Betrag und negiertem Steuer-Snapshot im Zeitraum des Stornodatums;
   das Original bleibt unverändert (Status „storniert“ wird abgeleitet).
+
+## Auswertungs-Konventionen
+- Auswertungen nur aus gespeicherten Snapshots (`AuswertungService`), nie Neuberechnung.
+- Fristen: `Fristen.VaFaelligkeit` + bundeseinheitliche `Feiertage`.
+- PDF: keine Sonderzeichen außerhalb der Standardschriften verwenden (z. B. kein ⚠), sonst wirft QuestPDF.
+- Dateinamen in Exporten nach Windows-Regeln bereinigen.
 
 ## Persistenz-Konventionen
 - Geld in SQLite als INTEGER-Cent, Kurse/Sätze als TEXT-Dezimalstring (Details: docs/datenmodell.md).
