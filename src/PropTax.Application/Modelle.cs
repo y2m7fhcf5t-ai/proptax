@@ -85,3 +85,5 @@ public sealed record BelegFilter
     public BelegStatus? Status { get; init; }
     public string? Suchtext { get; init; }
 }
+
+public sealed record EuerZeilenZuordnung(int Jahr, long KategorieId, string Kategorie, string Art, string? Zeile);

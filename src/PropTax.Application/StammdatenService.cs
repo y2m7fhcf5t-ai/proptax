@@ -77,6 +77,41 @@ public sealed class StammdatenService(Arbeitsbereich ab)
         return s.Stammdaten.EuerKategorien().Select(k => new EuerKategorieDaten(k.Id, k.Code, k.Bezeichnung, k.Art)).ToList();
     }
 
+    public string Unternehmen()
+    {
+        using var s = ab.Sitzung();
+        return s.Stammdaten.UnternehmenName();
+    }
+
+    public void SetzeUnternehmen(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new FachlicherFehler("Name fehlt.");
+        using var s = ab.Sitzung();
+        var alt = s.Stammdaten.UnternehmenName();
+        s.Stammdaten.SetzeUnternehmenName(name.Trim());
+        s.Protokoll.Anhaengen(ab.Jetzt, ab.Benutzer, "unternehmen", "1", "AENDERUNG", "Name", alt, name.Trim(), "Stammdatenpflege");
+        s.Commit();
+    }
+
+    /// <summary>Zuordnung EÜR-Kategorie → Zeile der Anlage EÜR je Jahr (vom Nutzer gepflegt, Status ungeprüft).</summary>
+    public IReadOnlyList<EuerZeilenZuordnung> EuerZeilen(int jahr)
+    {
+        using var s = ab.Sitzung();
+        var zeilen = s.Stammdaten.EuerZeilen(jahr).ToDictionary(z => z.EuerKategorieId);
+        return s.Stammdaten.EuerKategorien().Select(k => new EuerZeilenZuordnung(jahr, k.Id, k.Bezeichnung, k.Art,
+            zeilen.TryGetValue(k.Id, out var z) ? z.Zeile : null)).ToList();
+    }
+
+    public void SetzeEuerZeile(int jahr, long kategorieId, string? zeile, string begruendung)
+    {
+        PeriodenService.Pflicht(begruendung);
+        using var s = ab.Sitzung();
+        var alt = s.Stammdaten.EuerZeilen(jahr).FirstOrDefault(z => z.EuerKategorieId == kategorieId)?.Zeile;
+        s.Stammdaten.SetzeEuerZeile(jahr, kategorieId, zeile, null);
+        s.Protokoll.Anhaengen(ab.Jetzt, ab.Benutzer, "euer_zeile", $"{jahr}/{kategorieId}", "AENDERUNG", "Zeile", alt, zeile, begruendung);
+        s.Commit();
+    }
+
     public IReadOnlyList<VorlageDaten> Vorlagen()
     {
         using var s = ab.Sitzung();

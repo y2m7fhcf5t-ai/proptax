@@ -50,6 +50,7 @@ public sealed class Arbeitsbereich
     public DokumentService Dokumente => new(this);
     public EinstellungenService Einstellungen => new(this);
     public ProtokollService Protokoll => new(this);
+    public AuswertungService Auswertungen => new(this);
 
     internal Sitzung Sitzung() => Db.Sitzung();
 }

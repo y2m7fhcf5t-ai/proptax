@@ -61,7 +61,7 @@ public class PersistenzTests : IDisposable
     [Fact]
     public void Migration_ist_idempotent_und_Seed_einmalig()
     {
-        Assert.Equal(1, _t.Db.Migriere());
+        Assert.Equal(2, _t.Db.Migriere());
         using var s = _t.Db.Sitzung();
         Assert.False(Startdaten.Einspielen(s, JsonRegelwerk.LadeStartwerte(), TempDb.Jetzt, "Test"));
         Assert.Equal(["Onlinehandel", "Prop-Trading"], s.Stammdaten.Betriebe().Select(b => b.Name));
