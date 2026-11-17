@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\PropTax.Domain\PropTax.Domain.csproj" />
+    <ProjectReference Include="..\PropTax.TaxEngine\PropTax.TaxEngine.csproj" />
+    <ProjectReference Include="..\PropTax.Persistence\PropTax.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PropTax.Application.Tests" />
+  </ItemGroup>
+</Project>

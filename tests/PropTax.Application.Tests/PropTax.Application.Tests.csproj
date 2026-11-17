@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <!-- Coverage-Gate: Application + Persistence >= 80 % Zeilen. -->
+  <PropertyGroup>
+    <CollectCoverage>true</CollectCoverage>
+    <Include>[PropTax.Application]*,[PropTax.Persistence]*</Include>
+    <Threshold>80</Threshold>
+    <ThresholdType>line</ThresholdType>
+    <ThresholdStat>total</ThresholdStat>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <CoverletOutput>$(MSBuildThisFileDirectory)TestResults/</CoverletOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.msbuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <ProjectReference Include="..\..\src\PropTax.Application\PropTax.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>
