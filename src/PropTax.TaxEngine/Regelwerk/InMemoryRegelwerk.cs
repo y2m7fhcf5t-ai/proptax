@@ -23,8 +23,10 @@ public sealed class InMemoryRegelwerk : IRegelwerk
         return this;
     }
 
+    /// <summary>Ohne Stichtag: ersetzt alle bisherigen Werte. Mit Stichtag: gilt ab diesem Datum.</summary>
     public InMemoryRegelwerk SetzeEinstellung(string schluessel, string wert, DateOnly? ab = null)
     {
+        if (ab is null) Einstellungen.RemoveAll(e => e.Schluessel == schluessel);
         Einstellungen.Add(new Einstellung(schluessel, wert, ab ?? DateOnly.MinValue));
         return this;
     }
