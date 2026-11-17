@@ -1,6 +1,6 @@
 # ADR 0001 – Technologie-Stack
 
-- **Status:** vorgeschlagen (wartet auf Freigabe)
+- **Status:** angenommen (Freigabe 2026-11-17)
 - **Datum:** 2026-11-17
 
 ## Kontext
@@ -26,7 +26,10 @@ SQLite (optional verschlüsselt), später ERiC-Anbindung.
 Größen-/Startzeitangaben sind Erfahrungswerte, nicht gemessen; werden in Phase 5 verifiziert.
 
 ## Entscheidung (Empfehlung)
-**B) C# / .NET 10 LTS + Avalonia 11.**
+**B) C# / .NET 10 LTS + Avalonia.**
+
+Nachtrag Phase 1: Avalonia **12.1.6** ist die aktuelle stabile Version und wird statt 11 verwendet.
+Gemessen: `PropTax.App.exe` (win-x64, self-contained, komprimiert) ≈ 47 MB.
 
 Geplante Projektaufteilung (Details Phase 1):
 - `PropTax.Domain` – Entitäten, Wertobjekte (`Money`, `CurrencyAmount`), keine Abhängigkeiten
