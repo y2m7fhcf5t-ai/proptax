@@ -19,6 +19,18 @@ public partial class MainWindow : Window, IDialoge
         return dateien.Count == 0 ? null : dateien[0].TryGetLocalPath();
     }
 
+    public async Task<string?> DateiSpeichern(string titel, string vorschlag, string endung)
+    {
+        var datei = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = titel,
+            SuggestedFileName = vorschlag,
+            DefaultExtension = endung,
+            FileTypeChoices = [new FilePickerFileType(endung.ToUpperInvariant()) { Patterns = ["*." + endung] }],
+        });
+        return datei?.TryGetLocalPath();
+    }
+
     public async Task<string?> OrdnerWaehlen(string titel)
     {
         var ordner = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = titel, AllowMultiple = false });

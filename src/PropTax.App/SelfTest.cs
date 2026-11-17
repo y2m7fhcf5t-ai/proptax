@@ -20,8 +20,15 @@ internal static class SelfTest
                 Belegnummer = "ST-1", BetriebId = ab.Stammdaten.Betriebe()[0].Id, PartnerId = partner, Typ = Belegtyp.ChallengeGebuehr,
                 Richtung = Richtung.Eingang, Rechnungsdatum = new(2026, 3, 10), Leistungsdatum = new(2026, 3, 10), Betrag = new CurrencyAmount(99m, "USD"),
             });
-            var ok = e.Bemessungsgrundlage.Betrag == 91.67m && e.Zahllast.Betrag == 17.42m && ab.SchemaVersion >= 1 && ab.Protokoll.PruefeKette();
-            Console.WriteLine(ok ? $"SELFTEST OK (Schema v{ab.SchemaVersion}, Zahllast {e.Zahllast})" : $"SELFTEST FEHLER ({e.Zahllast})");
+            // PDF/XLSX-Export (prüft u. a., dass QuestPDF-Schriften in der Single-File-Exe verfügbar sind).
+            var pdf = Path.Combine(ordner, "selftest.pdf");
+            var xlsx = Path.Combine(ordner, "selftest.xlsx");
+            ab.Auswertungen.ExportiereNachweis(2026, pdf, ExportFormat.Pdf);
+            ab.Auswertungen.ExportiereNachweis(2026, xlsx, ExportFormat.Xlsx);
+            var exportOk = new FileInfo(pdf).Length > 1000 && new FileInfo(xlsx).Length > 1000;
+
+            var ok = e.Bemessungsgrundlage.Betrag == 91.67m && e.Zahllast.Betrag == 17.42m && ab.SchemaVersion >= 2 && ab.Protokoll.PruefeKette() && exportOk;
+            Console.WriteLine(ok ? $"SELFTEST OK (Schema v{ab.SchemaVersion}, Zahllast {e.Zahllast}, PDF/XLSX ok)" : $"SELFTEST FEHLER ({e.Zahllast}, Export {exportOk})");
             return ok ? 0 : 1;
         }
         finally

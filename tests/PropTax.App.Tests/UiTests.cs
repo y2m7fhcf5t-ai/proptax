@@ -25,6 +25,9 @@ internal sealed class KeineDialoge : IDialoge
     public string? Ordner { get; set; }
     public Task<string?> DateiOeffnen(string titel, params string[] endungen) => Task.FromResult(Datei);
     public Task<string?> OrdnerWaehlen(string titel) => Task.FromResult(Ordner);
+    public string? Speichern { get; set; }
+    public Task<string?> DateiSpeichern(string titel, string vorschlag, string endung) =>
+        Task.FromResult(Speichern is null ? null : Path.Combine(Speichern, vorschlag));
 }
 
 public sealed class UiTests : IDisposable
@@ -60,10 +63,10 @@ public sealed class UiTests : IDisposable
     {
         var (fenster, vm) = Starte();
         var tabs = fenster.GetLogicalDescendants().OfType<TabControl>().First();
-        Assert.Equal(["Belege", "Import", "Stammdaten", "Kurse", "Perioden", "Protokoll", "Einstellungen"],
+        Assert.Equal(["Belege", "Import", "Stammdaten", "Kurse", "Perioden", "Protokoll", "Einstellungen", "Auswertungen"],
             tabs.Items.OfType<TabItem>().Select(t => t.Header as string));
         Assert.Contains("4 Partner ohne Land", vm.Status.Text);
-        for (var i = 0; i < 7; i++) vm.Reiter = i; // jeder Reiter lädt ohne Fehler
+        for (var i = 0; i < 8; i++) vm.Reiter = i; // jeder Reiter lädt ohne Fehler
         Assert.False(vm.Status.IstFehler);
     }
 
@@ -187,6 +190,84 @@ public sealed class UiTests : IDisposable
         Assert.NotNull(bild);
         var ziel = Environment.GetEnvironmentVariable("PROPTAX_SCREENSHOT");
         if (!string.IsNullOrEmpty(ziel)) bild!.Save(ziel, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+    }
+
+    private void Testdaten()
+    {
+        _ab.Kurse.Setze(new KursDaten("USD", 2026, 4, 1.1000m, Kursquelle.Bmf));
+        _ab.Kurse.Setze(new KursDaten("USD", 2026, 5, 1.0800m, Kursquelle.Bmf));
+        var fn = _ab.Stammdaten.Partner().Single(p => p.Name == "Funded Next").Id;
+        var pt = _ab.Stammdaten.Betriebe().Single(b => b.Name == "Prop-Trading").Id;
+        void Buche(string nr, DateOnly d, decimal usd, Belegtyp typ = Belegtyp.ChallengeGebuehr)
+        {
+            var id = _ab.Belege.ErfasseEntwurf(new BelegDaten
+            {
+                Belegnummer = nr, BetriebId = pt, PartnerId = fn, Typ = typ, Richtung = BelegDaten.RichtungFuer(typ),
+                Rechnungsdatum = d, Leistungsdatum = d, Zahlungsdatum = d, Betrag = new Domain.Werte.CurrencyAmount(usd, "USD"),
+            });
+            _ab.Belege.Buche(id);
+        }
+        Buche("FN-1001", new(2026, 3, 10), 99m);
+        Buche("FN-1002", new(2026, 3, 12), 149m);
+        Buche("FN-1003", new(2026, 4, 8), 99m);
+        Buche("PO-1", new(2026, 5, 15), 2000m, Belegtyp.Payout);
+    }
+
+    [AvaloniaFact]
+    public async Task Auswertungen_laden_exportieren_und_Screenshots()
+    {
+        Testdaten();
+        var (fenster, vm) = Starte();
+        var a = vm.Auswertungen;
+        a.Jahr = 2026;
+        a.Aktualisieren();
+        Assert.False(vm.Status.IstFehler, vm.Status.Text);
+        Assert.Equal(4, a.Zeitraeume.Count);
+        Assert.Equal(["52", "53"], a.Kennzahlen.Select(k => k.Kz));
+        a.KennzahlAuswahl = a.Kennzahlen[0];
+        Assert.Equal(2, a.DrillBelege.Count);
+        Assert.Contains("Zahllast 43,63", a.VaKopf);
+        Assert.Equal(4, a.Fristen.Count);
+        Assert.Contains("nein", a.Fristen[2].Pflicht);
+        Assert.Equal(3, a.Nachweis.Count);
+        Assert.Single(a.DashboardFirmen);
+        Assert.Contains("Payouts 1.851,85", a.DashboardSumme);
+        Assert.Contains("Ergebnis", a.EuerSumme);
+
+        var ziel = Path.Combine(_ordner, "export");
+        Directory.CreateDirectory(ziel);
+        _dialoge.Speichern = ziel;
+        await a.NachweisPdfCommand.ExecuteAsync(null);
+        await a.NachweisXlsxCommand.ExecuteAsync(null);
+        await a.NachweisZipCommand.ExecuteAsync(null);
+        await a.VaXlsxCommand.ExecuteAsync(null);
+        await a.EuerXlsxCommand.ExecuteAsync(null);
+        await a.EuerCsvCommand.ExecuteAsync(null);
+        Assert.Equal(6, Directory.GetFiles(ziel).Length);
+
+        a.Begruendung = "laut Steuerberater";
+        a.ZuordnungAuswahl = a.ZeilenZuordnung.First(z => z.Kategorie.StartsWith("Prop-Firmen"));
+        a.AnlageZeile = "Zeile (Test)";
+        a.ZeileSpeichern();
+        Assert.Contains(a.EuerZeilen, z => z.Zeile == "Zeile (Test)");
+        a.VorjahrEingabe = "12.000,00";
+        a.VorjahrSpeichern();
+        Assert.Contains("manuell", a.GrenzText);
+        a.UmschaltungUebernehmen();
+        Assert.True(vm.Status.IstFehler); // kein Vorschlag → Meldung
+
+        vm.Reiter = 7;
+        var screenshot = Environment.GetEnvironmentVariable("PROPTAX_SCREENSHOT_DIR");
+        var innen = fenster.GetLogicalDescendants().OfType<AuswertungenView>().First().GetLogicalDescendants().OfType<TabControl>().First();
+        foreach (var (index, name) in new[] { (0, "ustva"), (5, "dashboard") })
+        {
+            innen.SelectedIndex = index;
+            if (index == 0) a.KennzahlAuswahl = a.Kennzahlen[0];
+            Dispatch();
+            var bild = fenster.CaptureRenderedFrame();
+            Assert.NotNull(bild);
+            if (!string.IsNullOrEmpty(screenshot)) bild!.Save(Path.Combine(screenshot, name + ".png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+        }
     }
 
     private static void Dispatch() => Avalonia.Threading.Dispatcher.UIThread.RunJobs();

@@ -1,0 +1,189 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             xmlns:app="using:PropTax.Application"
+             x:Class="PropTax.App.Views.AuswertungenView"
+             x:DataType="vm:AuswertungenViewModel">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+      <TextBlock Classes="label" Text="Jahr" />
+      <NumericUpDown Value="{Binding Jahr}" Minimum="2000" Maximum="2100" FormatString="0" Width="140" />
+      <Button Content="Aktualisieren" Command="{Binding AktualisierenCommand}" />
+      <TextBox Text="{Binding Begruendung}" PlaceholderText="Begründung für Änderungen (Umschaltung, Vorjahr, Zeilen)" Width="420" />
+    </StackPanel>
+    <TabControl>
+      <TabItem Header="USt-VA">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+            <TextBlock Classes="label" Text="Zeitraum" />
+            <ComboBox ItemsSource="{Binding Zeitraeume}" SelectedItem="{Binding Zeitraum}" Width="140" />
+            <Button Content="Als XLSX exportieren…" Command="{Binding VaXlsxCommand}" />
+          </StackPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding VaKopf}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,6" />
+          <TextBlock DockPanel.Dock="Bottom" Classes="hinweis" Text="Kennzahlen-Zuordnung ungeprüft (TODO-STEUER O-05). Formularwert: Bemessungsgrundlagen in vollen Euro (O-08). Keine ELSTER-Übermittlung." />
+          <Grid RowDefinitions="*,6,*">
+            <DataGrid ItemsSource="{Binding Kennzahlen}" SelectedItem="{Binding KennzahlAuswahl}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Kz" Binding="{Binding Kz}" />
+                <DataGridTextColumn Header="Bezeichnung" Binding="{Binding Bezeichnung}" Width="*" />
+                <DataGridTextColumn Header="Betrag €" Binding="{Binding Betrag}" />
+                <DataGridTextColumn Header="Formular" Binding="{Binding Formular}" />
+                <DataGridTextColumn Header="Belege" Binding="{Binding Belege}" />
+              </DataGrid.Columns>
+            </DataGrid>
+            <GridSplitter Grid.Row="1" />
+            <DockPanel Grid.Row="2">
+              <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Belege (Kennzahl wählen für Drill-down)" />
+              <DataGrid ItemsSource="{Binding DrillBelege}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Beleg" Binding="{Binding Beleg}" /><DataGridTextColumn Header="Datum" Binding="{Binding Datum}" />
+                  <DataGridTextColumn Header="Partner" Binding="{Binding Partner}" /><DataGridTextColumn Header="Betrag" Binding="{Binding Betrag}" />
+                  <DataGridTextColumn Header="Wert €" Binding="{Binding Wert}" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </DockPanel>
+          </Grid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Fristen &amp; Zahllast">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding FristenSumme}" FontWeight="SemiBold" Margin="0,0,0,6" />
+          <TextBlock DockPanel.Dock="Bottom" Classes="hinweis" Text="Fälligkeit: 10. Tag nach Ablauf des Zeitraums (§18 Abs. 1 UStG), Verschiebung auf den nächsten Werktag (§108 Abs. 3 AO, bundeseinheitliche Feiertage). Kleinunternehmer: Voranmeldung nur bei Steuer nach §13b (§18 Abs. 4a UStG)." />
+          <DataGrid ItemsSource="{Binding Fristen}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum}" />
+              <DataGridTextColumn Header="Fällig" Binding="{Binding Faellig}" />
+              <DataGridTextColumn Header="Voranmeldung" Binding="{Binding Pflicht}" />
+              <DataGridTextColumn Header="USt €" Binding="{Binding Steuer}" />
+              <DataGridTextColumn Header="VSt €" Binding="{Binding Vorsteuer}" />
+              <DataGridTextColumn Header="Zahllast €" Binding="{Binding Zahllast}" />
+              <DataGridTextColumn Header="Belege" Binding="{Binding Belege}" />
+              <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="§19-Monitor">
+        <StackPanel Spacing="8" MaxWidth="1000" HorizontalAlignment="Left">
+          <ProgressBar Value="{Binding GrenzProzent}" Minimum="0" Maximum="100" Height="22" ShowProgressText="True" />
+          <TextBlock Text="{Binding GrenzText}" TextWrapping="Wrap" />
+          <TextBlock Classes="h2" Text="Warnungen" />
+          <ItemsControl ItemsSource="{Binding GrenzWarnungen}" />
+          <TextBlock Text="{Binding Vorschlag}" TextWrapping="Wrap" FontWeight="SemiBold" />
+          <Button Content="Umschaltung auf Regelbesteuerung übernehmen" Command="{Binding UmschaltungUebernehmenCommand}" IsEnabled="{Binding HatVorschlag}" />
+          <TextBlock Classes="h2" Text="Vorjahresumsatz manuell (für Jahre vor Nutzung von PropTax)" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding VorjahrEingabe}" PlaceholderText="z. B. 18.500,00" Width="200" />
+            <Button Content="Speichern" Command="{Binding VorjahrSpeichernCommand}" />
+          </StackPanel>
+          <TextBlock Classes="hinweis" Text="Grenzen und Warnschwelle sind konfigurierbar (ungeprüft, O-02). Gezählt werden Umsätze aller Betriebe mit §19-Relevanz laut Regeltabelle." />
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="EÜR">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+            <TextBlock Classes="label" Text="Betrieb" />
+            <ComboBox ItemsSource="{Binding Betriebe}" SelectedItem="{Binding Betrieb}" Width="220">
+              <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name, FallbackValue='Gesamt (alle Betriebe)', TargetNullValue='Gesamt (alle Betriebe)'}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Content="XLSX…" Command="{Binding EuerXlsxCommand}" /><Button Content="CSV…" Command="{Binding EuerCsvCommand}" />
+          </StackPanel>
+          <TextBlock DockPanel.Dock="Top" Text="{Binding EuerSumme}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4" />
+          <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding EuerHinweise}" Foreground="#9A6700" Margin="0,0,0,6" />
+          <Grid ColumnDefinitions="*,8,340">
+            <Grid RowDefinitions="Auto,6,*">
+              <DataGrid ItemsSource="{Binding EuerZeilen}" IsReadOnly="True" AutoGenerateColumns="False" MaxHeight="260" x:CompileBindings="False">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Art" Binding="{Binding Art}" /><DataGridTextColumn Header="Kategorie" Binding="{Binding Kategorie}" Width="*" />
+                  <DataGridTextColumn Header="Anlage EÜR" Binding="{Binding Zeile}" /><DataGridTextColumn Header="Betrag €" Binding="{Binding Betrag}" />
+                  <DataGridTextColumn Header="Pos." Binding="{Binding Anzahl}" />
+                </DataGrid.Columns>
+              </DataGrid>
+              <DataGrid Grid.Row="2" ItemsSource="{Binding EuerPositionen}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Beleg" Binding="{Binding Beleg}" /><DataGridTextColumn Header="Zahlung" Binding="{Binding Datum}" />
+                  <DataGridTextColumn Header="Betrieb" Binding="{Binding Betrieb}" /><DataGridTextColumn Header="Kategorie" Binding="{Binding Kategorie}" />
+                  <DataGridTextColumn Header="Art" Binding="{Binding Art}" /><DataGridTextColumn Header="EUR (EÜR)" Binding="{Binding Betrag}" />
+                  <DataGridTextColumn Header="EUR (USt)" Binding="{Binding UstEur}" /><DataGridTextColumn Header="Kursdiff." Binding="{Binding Kursdifferenz}" />
+                  <DataGridTextColumn Header="Kursquelle" Binding="{Binding Quelle}" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <StackPanel Grid.Column="2" Spacing="6">
+              <TextBlock Classes="h2" Text="Zeilen der Anlage EÜR (Jahr)" />
+              <TextBlock Classes="hinweis" Text="Nicht vorbelegt – bitte laut aktuellem Formular bzw. Steuerberatung pflegen (O-14)." />
+              <ListBox ItemsSource="{Binding ZeilenZuordnung}" SelectedItem="{Binding ZuordnungAuswahl}" MaxHeight="260">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="app:EuerZeilenZuordnung">
+                    <TextBlock><Run Text="{Binding Kategorie}" /><Run Text=" → " /><Run Text="{Binding Zeile, TargetNullValue='–'}" /></TextBlock>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <TextBox Text="{Binding AnlageZeile}" PlaceholderText="Zeile, z. B. laut Formular" />
+              <Button Content="Zeile speichern" Command="{Binding ZeileSpeichernCommand}" />
+            </StackPanel>
+          </Grid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Finanzamt-Nachweis">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
+            <Button Content="PDF…" Command="{Binding NachweisPdfCommand}" Classes="accent" />
+            <Button Content="XLSX…" Command="{Binding NachweisXlsxCommand}" />
+            <Button Content="ZIP mit Belegen…" Command="{Binding NachweisZipCommand}" />
+            <TextBlock Classes="label" Text="{Binding NachweisSumme}" FontWeight="SemiBold" />
+          </StackPanel>
+          <DataGrid ItemsSource="{Binding Nachweis}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Datum" Binding="{Binding Datum}" /><DataGridTextColumn Header="Beleg" Binding="{Binding Beleg}" />
+              <DataGridTextColumn Header="Partner" Binding="{Binding Partner}" /><DataGridTextColumn Header="Land" Binding="{Binding Land}" />
+              <DataGridTextColumn Header="Betrag" Binding="{Binding Betrag}" /><DataGridTextColumn Header="Kurs" Binding="{Binding Kurs}" />
+              <DataGridTextColumn Header="EUR" Binding="{Binding Eur}" /><DataGridTextColumn Header="§13b-USt" Binding="{Binding Steuer}" />
+              <DataGridTextColumn Header="Kz" Binding="{Binding Kz}" /><DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum}" />
+              <DataGridTextColumn Header="Belegdatei" Binding="{Binding Dateien}" /><DataGridTextColumn Header="Hinweis" Binding="{Binding Hinweis}" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Dashboard">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+            <TextBlock Classes="label" Text="Prop-Firma" />
+            <ComboBox ItemsSource="{Binding Firmen}" SelectedItem="{Binding Firma}" Width="220">
+              <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name, FallbackValue='Alle Prop-Firmen', TargetNullValue='Alle Prop-Firmen'}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Classes="label" Text="{Binding DashboardSumme}" FontWeight="SemiBold" />
+          </StackPanel>
+          <TextBlock DockPanel.Dock="Bottom" Classes="hinweis" Text="Netto = Payouts − Gebühren (inkl. Erstattungen/Stornos) − USt-Last (§13b-Zahllast). EUR laut USt-Umrechnung (BMF-Monatskurse). Balken: rot = Gebühren, grün = Payouts." />
+          <Grid RowDefinitions="Auto,*" ColumnDefinitions="*,12,*">
+            <TextBlock Classes="h2" Text="Je Prop-Firma" /><TextBlock Grid.Column="2" Classes="h2" Text="Je Monat" />
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding DashboardFirmen}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:DashboardVm">
+              <Grid ColumnDefinitions="140,*" Margin="0,4">
+                <TextBlock Text="{Binding Bezeichnung}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="2">
+                  <StackPanel Orientation="Horizontal" Spacing="6"><Rectangle Fill="#D9534F" Height="10" Width="{Binding BalkenGebuehren}" /><TextBlock FontSize="11" Text="{Binding Gebuehren, StringFormat='Gebühren {0} €'}" /></StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="6"><Rectangle Fill="#2E9E5B" Height="10" Width="{Binding BalkenPayouts}" /><TextBlock FontSize="11" Text="{Binding Payouts, StringFormat='Payouts {0} €'}" /></StackPanel>
+                  <TextBlock FontSize="11"><Run Text="{Binding UstLast, StringFormat='USt-Last {0} € · '}" /><Run Text="{Binding Netto, StringFormat='Netto {0} €'}" FontWeight="SemiBold" /><Run Text="{Binding Anzahl, StringFormat=' · Käufe/Payouts {0}'}" /></TextBlock>
+                </StackPanel>
+              </Grid>
+            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            <ScrollViewer Grid.Row="1" Grid.Column="2"><ItemsControl ItemsSource="{Binding DashboardMonate}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:DashboardVm">
+              <Grid ColumnDefinitions="100,*" Margin="0,2">
+                <TextBlock Text="{Binding Bezeichnung}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Spacing="1">
+                  <StackPanel Orientation="Horizontal" Spacing="6"><Rectangle Fill="#D9534F" Height="8" Width="{Binding BalkenGebuehren}" /><TextBlock FontSize="10" Text="{Binding Gebuehren}" /></StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="6"><Rectangle Fill="#2E9E5B" Height="8" Width="{Binding BalkenPayouts}" /><TextBlock FontSize="10" Text="{Binding Payouts}" /><TextBlock FontSize="10" Text="{Binding Netto, StringFormat='· Netto {0}'}" /></StackPanel>
+                </StackPanel>
+              </Grid>
+            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+          </Grid>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>

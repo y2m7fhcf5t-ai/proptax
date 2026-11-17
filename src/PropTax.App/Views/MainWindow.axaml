@@ -21,6 +21,7 @@
       <TabItem Header="Perioden"><v:PeriodenView DataContext="{Binding Perioden}" /></TabItem>
       <TabItem Header="Protokoll"><v:ProtokollView DataContext="{Binding Protokoll}" /></TabItem>
       <TabItem Header="Einstellungen"><v:EinstellungenView DataContext="{Binding Einstellungen}" /></TabItem>
+      <TabItem Header="Auswertungen"><v:AuswertungenView DataContext="{Binding Auswertungen}" /></TabItem>
     </TabControl>
   </DockPanel>
 </Window>

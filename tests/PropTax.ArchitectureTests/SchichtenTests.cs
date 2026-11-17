@@ -33,6 +33,11 @@ public class SchichtenTests
             .HaveDependencyOnAny("PropTax.Persistence", "Microsoft.Data.Sqlite", "Dapper").GetResult().IsSuccessful);
 
     [Fact]
+    public void Reporting_kennt_nur_Domain() =>
+        Assert.True(Types.InAssembly(typeof(PropTax.Reporting.NachweisExport).Assembly).ShouldNot()
+            .HaveDependencyOnAny("PropTax.Application", "PropTax.Persistence", "PropTax.TaxEngine", "PropTax.App", "Avalonia").GetResult().IsSuccessful);
+
+    [Fact]
     public void Persistenz_kennt_weder_Anwendung_noch_UI() =>
         Assert.True(Types.InAssembly(typeof(PropTax.Persistence.Datenbank).Assembly).ShouldNot()
             .HaveDependencyOnAny("PropTax.Application", "PropTax.App", "PropTax.Reporting", "Avalonia").GetResult().IsSuccessful);

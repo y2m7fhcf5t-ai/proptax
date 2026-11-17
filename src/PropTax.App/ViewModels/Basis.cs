@@ -12,6 +12,7 @@ public interface IDialoge
 {
     Task<string?> DateiOeffnen(string titel, params string[] endungen);
     Task<string?> OrdnerWaehlen(string titel);
+    Task<string?> DateiSpeichern(string titel, string vorschlag, string endung);
 }
 
 /// <summary>Gemeinsame Statusleiste für Erfolgs- und Fehlermeldungen.</summary>

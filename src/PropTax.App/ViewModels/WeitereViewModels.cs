@@ -171,6 +171,7 @@ public sealed partial class MainViewModel : ObservableObject
         Perioden = new PeriodenViewModel(ab, Status);
         Protokoll = new ProtokollViewModel(ab, Status);
         Einstellungen = new EinstellungenViewModel(ab, Status);
+        Auswertungen = new AuswertungenViewModel(ab, Status, dialoge);
         var ohneLand = ab.Stammdaten.Partner().Count(p => p.Aktiv && p.Kategorie is null);
         Status.Ok(ohneLand > 0
             ? $"Datenordner {ab.Datenordner}. Hinweis: {ohneLand} Partner ohne Land/Kategorie – unter Stammdaten ergänzen."
@@ -186,6 +187,7 @@ public sealed partial class MainViewModel : ObservableObject
     public PeriodenViewModel Perioden { get; }
     public ProtokollViewModel Protokoll { get; }
     public EinstellungenViewModel Einstellungen { get; }
+    public AuswertungenViewModel Auswertungen { get; }
     public string Titel => $"PropTax – {Arbeitsbereich.Datenordner}";
 
     [ObservableProperty] public partial int Reiter { get; set; }
@@ -202,6 +204,7 @@ public sealed partial class MainViewModel : ObservableObject
             case 4: Perioden.Aktualisieren(); break;
             case 5: Protokoll.Aktualisieren(); break;
             case 6: Einstellungen.Aktualisieren(); break;
+            case 7: Auswertungen.Aktualisieren(); break;
         }
     }
 }

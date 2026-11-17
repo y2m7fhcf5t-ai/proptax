@@ -8,6 +8,8 @@
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <!-- QuestPDF-Schriften u. a. Inhaltsdateien in die Exe bündeln (echte Single-File-Auslieferung). -->
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
