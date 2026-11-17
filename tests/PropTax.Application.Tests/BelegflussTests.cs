@@ -12,7 +12,7 @@ public class BelegflussTests : Basis
     public void Erneutes_Oeffnen_spielt_keine_Startdaten_doppelt_ein()
     {
         var ab2 = Arbeitsbereich.Oeffne(Ordner, "Tester");
-        Assert.Equal(2, ab2.SchemaVersion);
+        Assert.Equal(3, ab2.SchemaVersion);
         Assert.Equal(2, ab2.Stammdaten.Betriebe().Count);
         Assert.Equal(5, ab2.Stammdaten.Partner().Count(p => p.IstPropFirma));
         Assert.True(File.Exists(Path.Combine(Ordner, Arbeitsbereich.DateinameDb)));
