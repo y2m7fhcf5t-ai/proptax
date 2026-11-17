@@ -2,4 +2,8 @@
   <ItemGroup>
     <ProjectReference Include="..\PropTax.Domain\PropTax.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
 </Project>

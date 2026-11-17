@@ -168,4 +168,13 @@ public sealed class ProtokollZeile
     public string PrevHash { get; set; }
     public string Hash { get; set; }
 }
+public sealed class EuerZeilenZeile
+{
+    public long Id { get; set; }
+    public long Jahr { get; set; }
+    public long EuerKategorieId { get; set; }
+    public string Zeile { get; set; }
+    public string? Bezeichnung { get; set; }
+    public string Status { get; set; }
+}
 #pragma warning restore CS8618

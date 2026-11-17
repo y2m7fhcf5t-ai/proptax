@@ -16,6 +16,22 @@ public abstract class Repository(Sitzung s)
 public sealed class StammdatenRepository(Sitzung s) : Repository(s)
 {
     public long UnternehmenId() => Scalar<long>("SELECT id FROM unternehmen ORDER BY id LIMIT 1");
+    public string UnternehmenName() => Scalar<string>("SELECT name FROM unternehmen ORDER BY id LIMIT 1");
+    public void SetzeUnternehmenName(string name) => Exec("UPDATE unternehmen SET name=@name WHERE id=(SELECT MIN(id) FROM unternehmen)", new { name });
+
+    public IReadOnlyList<EuerZeilenZeile> EuerZeilen(int jahr) =>
+        Query<EuerZeilenZeile>("SELECT * FROM euer_zeilen_mapping WHERE jahr=@jahr ORDER BY euer_kategorie_id", new { jahr }).ToList();
+
+    public void SetzeEuerZeile(int jahr, long kategorieId, string? zeile, string? bezeichnung)
+    {
+        if (string.IsNullOrWhiteSpace(zeile))
+            Exec("DELETE FROM euer_zeilen_mapping WHERE jahr=@jahr AND euer_kategorie_id=@kategorieId", new { jahr, kategorieId });
+        else
+            Exec("""
+                INSERT INTO euer_zeilen_mapping (jahr, euer_kategorie_id, zeile, bezeichnung) VALUES (@jahr, @kategorieId, @zeile, @bezeichnung)
+                ON CONFLICT(jahr, euer_kategorie_id) DO UPDATE SET zeile=@zeile, bezeichnung=@bezeichnung, status='Ungeprueft'
+                """, new { jahr, kategorieId, zeile = zeile.Trim(), bezeichnung });
+    }
 
     public IReadOnlyList<BetriebZeile> Betriebe() => Query<BetriebZeile>("SELECT * FROM betrieb ORDER BY name").ToList();
     public BetriebZeile? Betrieb(long id) => Single<BetriebZeile>("SELECT * FROM betrieb WHERE id=@id", new { id });
