@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             x:Class="PropTax.App.Views.PeriodenView"
+             x:DataType="vm:PeriodenViewModel">
+  <StackPanel Spacing="6" MaxWidth="900" HorizontalAlignment="Left">
+    <StackPanel Orientation="Horizontal" Spacing="6">
+      <TextBlock Classes="label" Text="Jahr" /><NumericUpDown Value="{Binding Jahr}" Minimum="2000" Maximum="2100" FormatString="0" Width="140" />
+    </StackPanel>
+    <TextBlock Classes="hinweis" Text="Festschreibung ist endgültig (GoBD): danach sind Belege dieses Zeitraums nur noch per Storno/Korrektur in einem offenen Zeitraum änderbar. Vorher alle Entwürfe buchen oder löschen." />
+    <TextBox Text="{Binding Begruendung}" PlaceholderText="Begründung, z. B. „USt-VA Q1 übermittelt am …“" />
+    <ItemsControl ItemsSource="{Binding Zeilen}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:PeriodeZeileVm">
+          <Grid ColumnDefinitions="220,*,160" Margin="0,3">
+            <TextBlock Classes="label" Text="{Binding Bezeichnung}" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1" Classes="label" Text="{Binding Info}" />
+            <Button Grid.Column="2" Content="Festschreiben" IsEnabled="{Binding !Festgeschrieben}"
+                    Command="{Binding $parent[ItemsControl].((vm:PeriodenViewModel)DataContext).FestschreibenCommand}" CommandParameter="{Binding}" />
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>

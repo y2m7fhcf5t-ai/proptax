@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PropTax.App.ViewModels"
+        xmlns:v="using:PropTax.App.Views"
+        x:Class="PropTax.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding Titel}" Width="1400" Height="860" MinWidth="1000" MinHeight="640">
+  <DockPanel>
+    <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#F3F3F3" BorderBrush="#DDD" BorderThickness="0,1,0,0">
+      <TextBlock Text="{Binding Status.Text}" TextWrapping="Wrap" Classes.fehler="{Binding Status.IstFehler}">
+        <TextBlock.Styles>
+          <Style Selector="TextBlock.fehler"><Setter Property="Foreground" Value="#B00020" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+        </TextBlock.Styles>
+      </TextBlock>
+    </Border>
+    <TabControl SelectedIndex="{Binding Reiter}" Padding="8">
+      <TabItem Header="Belege"><v:BelegeView DataContext="{Binding Belege}" /></TabItem>
+      <TabItem Header="Import"><v:ImportView DataContext="{Binding Import}" /></TabItem>
+      <TabItem Header="Stammdaten"><v:StammdatenView DataContext="{Binding Stammdaten}" /></TabItem>
+      <TabItem Header="Kurse"><v:KurseView DataContext="{Binding Kurse}" /></TabItem>
+      <TabItem Header="Perioden"><v:PeriodenView DataContext="{Binding Perioden}" /></TabItem>
+      <TabItem Header="Protokoll"><v:ProtokollView DataContext="{Binding Protokoll}" /></TabItem>
+      <TabItem Header="Einstellungen"><v:EinstellungenView DataContext="{Binding Einstellungen}" /></TabItem>
+    </TabControl>
+  </DockPanel>
+</Window>

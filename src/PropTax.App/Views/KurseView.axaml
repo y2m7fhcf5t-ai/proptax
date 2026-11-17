@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             x:Class="PropTax.App.Views.KurseView"
+             x:DataType="vm:KurseViewModel">
+  <Grid ColumnDefinitions="*,8,380">
+    <DataGrid ItemsSource="{Binding Kurse}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Währung" Binding="{Binding Waehrung}" /><DataGridTextColumn Header="Jahr" Binding="{Binding Jahr}" />
+        <DataGridTextColumn Header="Monat" Binding="{Binding Monat}" /><DataGridTextColumn Header="1 EUR =" Binding="{Binding Kurs}" />
+        <DataGridTextColumn Header="Quelle" Binding="{Binding Quelle}" />
+      </DataGrid.Columns>
+    </DataGrid>
+    <StackPanel Grid.Column="2" Spacing="4">
+      <TextBlock Classes="hinweis" Text="Umrechnung nach §16 Abs. 6 UStG mit den monatlichen BMF-Umsatzsteuer-Umrechnungskursen (Notation: 1 EUR = x Fremdwährung)." />
+      <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+        <TextBlock Classes="label" Text="Währung" /><TextBox Grid.Column="1" Text="{Binding Waehrung}" />
+        <TextBlock Classes="label" Grid.Row="1" Text="Jahr" /><NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Jahr}" Minimum="2000" Maximum="2100" FormatString="0" />
+        <TextBlock Classes="label" Grid.Row="2" Text="Monat" /><NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Monat}" Minimum="1" Maximum="12" FormatString="0" />
+        <TextBlock Classes="label" Grid.Row="3" Text="Kurs" /><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Kurs}" PlaceholderText="1,0800" />
+        <TextBlock Classes="label" Grid.Row="4" Text="Quelle" />
+        <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Quellen}" SelectedItem="{Binding Quelle}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+      <WrapPanel><Button Content="Kurs speichern" Command="{Binding SetzenCommand}" Classes="accent" /><Button Content="CSV importieren…" Command="{Binding CsvImportierenCommand}" /></WrapPanel>
+      <TextBlock Classes="hinweis" Text="CSV-Formate: „Währung;Monat;Kurs“ (Monat 2026-03 oder 03/2026) oder Kopfzeile „Währung;2026-01;2026-02;…“ mit einer Zeile je Währung." />
+    </StackPanel>
+  </Grid>
+</UserControl>

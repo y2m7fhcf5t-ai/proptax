@@ -1,9 +1,0 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="PropTax.App.MainWindow"
-        Title="PropTax – Buchhaltung &amp; USt" Width="900" Height="600">
-  <StackPanel Margin="24" Spacing="8">
-    <TextBlock FontSize="22" Text="PropTax" />
-    <TextBlock Text="Gerüst (Phase 1). Funktionen folgen ab Phase 3." />
-  </StackPanel>
-</Window>

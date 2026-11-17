@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             xmlns:rw="using:PropTax.TaxEngine.Regelwerk"
+             x:Class="PropTax.App.Views.EinstellungenView"
+             x:DataType="vm:EinstellungenViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="6" MaxWidth="900" HorizontalAlignment="Left">
+      <TextBlock Classes="h2" Text="Datenordner" />
+      <SelectableTextBlock Text="{Binding Datenordner}" />
+      <TextBlock Classes="hinweis" Text="Enthält die Datenbank (proptax.db) und alle Belegdateien (belege/). Für ein Backup genügt eine Kopie dieses Ordners bei geschlossener Anwendung." />
+
+      <TextBlock Classes="h2" Text="Aktueller Stand" />
+      <TextBlock Text="{Binding AktuellerStand}" TextWrapping="Wrap" />
+      <TextBox Text="{Binding Begruendung}" PlaceholderText="Begründung (Pflicht für jede Änderung)" />
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Classes="label" Text="Gültig ab" /><CalendarDatePicker SelectedDate="{Binding Ab_}" />
+      </StackPanel>
+
+      <TextBlock Classes="h2" Text="Besteuerungsart (§19 UStG)" />
+      <ItemsControl ItemsSource="{Binding Historie}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="rw:BesteuerungsartAb">
+            <TextBlock>
+              <Run Text="{Binding Ab, StringFormat='ab {0:dd.MM.yyyy}: '}" />
+              <Run Text="{Binding Art, Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" />
+            </TextBlock>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <ComboBox ItemsSource="{Binding Arten}" SelectedItem="{Binding Art}" Width="260">
+          <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Content="Ab Stichtag setzen" Command="{Binding BesteuerungsartSetzenCommand}" />
+      </StackPanel>
+
+      <TextBlock Classes="h2" Text="USt-Behandlung von Payouts (TODO-STEUER O-04)" />
+      <TextBlock Classes="hinweis" Text="Fachlich offen – bitte mit Steuerberatung klären. Wirkt auf Kennzahl 45/81 und die §19-Grenze." />
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <ComboBox ItemsSource="{Binding PayoutOptionen}" SelectedItem="{Binding Payout}" Width="260" />
+        <Button Content="Ab Stichtag setzen" Command="{Binding PayoutSetzenCommand}" />
+      </StackPanel>
+
+      <TextBlock Classes="h2" Text="Neuberechnung" />
+      <TextBlock Classes="hinweis" Text="Berechnet gebuchte Belege in offenen Perioden neu (z. B. nach Kurskorrektur). Manuell übersteuerte und festgeschriebene Belege bleiben unverändert." />
+      <Button Content="Offene Belege neu berechnen" Command="{Binding NeuBerechnenCommand}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -8,18 +8,19 @@
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PropTax.Domain\PropTax.Domain.csproj" />
-    <ProjectReference Include="..\PropTax.TaxEngine\PropTax.TaxEngine.csproj" />
-    <ProjectReference Include="..\PropTax.Persistence\PropTax.Persistence.csproj" />
-    <ProjectReference Include="..\PropTax.Reporting\PropTax.Reporting.csproj" />
+    <!-- UI kennt nur die Anwendungsschicht (Architekturtest). -->
+    <ProjectReference Include="..\PropTax.Application\PropTax.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PropTax.App.Tests" />
   </ItemGroup>
 </Project>

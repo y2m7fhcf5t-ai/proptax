@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\src\PropTax.TaxEngine\PropTax.TaxEngine.csproj" />
     <ProjectReference Include="..\..\src\PropTax.Persistence\PropTax.Persistence.csproj" />
     <ProjectReference Include="..\..\src\PropTax.Reporting\PropTax.Reporting.csproj" />
+    <ProjectReference Include="..\..\src\PropTax.Application\PropTax.Application.csproj" />
+    <ProjectReference Include="..\..\src\PropTax.App\PropTax.App.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

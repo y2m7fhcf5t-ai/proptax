@@ -22,6 +22,21 @@ public class SchichtenTests
             .HaveDependencyOnAny("PropTax.Persistence", "PropTax.Reporting", "PropTax.App", "Avalonia", "Microsoft.EntityFrameworkCore", "Microsoft.Data.Sqlite")
             .GetResult().IsSuccessful);
 
+    [Fact]
+    public void Anwendungsschicht_kennt_keine_UI() =>
+        Assert.True(Types.InAssembly(typeof(PropTax.Application.Arbeitsbereich).Assembly).ShouldNot()
+            .HaveDependencyOnAny("PropTax.App", "Avalonia").GetResult().IsSuccessful);
+
+    [Fact]
+    public void UI_greift_nicht_direkt_auf_Datenbank_zu() =>
+        Assert.True(Types.InAssembly(typeof(PropTax.App.Views.MainWindow).Assembly).ShouldNot()
+            .HaveDependencyOnAny("PropTax.Persistence", "Microsoft.Data.Sqlite", "Dapper").GetResult().IsSuccessful);
+
+    [Fact]
+    public void Persistenz_kennt_weder_Anwendung_noch_UI() =>
+        Assert.True(Types.InAssembly(typeof(PropTax.Persistence.Datenbank).Assembly).ShouldNot()
+            .HaveDependencyOnAny("PropTax.Application", "PropTax.App", "PropTax.Reporting", "Avalonia").GetResult().IsSuccessful);
+
     [Theory]
     [MemberData(nameof(KernAssemblies))]
     public void Keine_Gleitkommatypen_in_Domain_und_Engine(string name)

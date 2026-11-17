@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             x:Class="PropTax.App.Views.ProtokollView"
+             x:DataType="vm:ProtokollViewModel">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+      <Button Content="Aktualisieren / Kette prüfen" Command="{Binding AktualisierenCommand}" />
+      <TextBlock Classes="label" Text="{Binding Kettenstatus}" FontWeight="SemiBold" />
+    </StackPanel>
+    <DataGrid ItemsSource="{Binding Eintraege}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Nr" Binding="{Binding Nr}" />
+        <DataGridTextColumn Header="Zeitpunkt (UTC)" Binding="{Binding Zeitpunkt, StringFormat='{}{0:dd.MM.yyyy HH:mm:ss}'}" />
+        <DataGridTextColumn Header="Benutzer" Binding="{Binding Benutzer}" />
+        <DataGridTextColumn Header="Objekt" Binding="{Binding Entitaet}" />
+        <DataGridTextColumn Header="ID" Binding="{Binding EntitaetId}" />
+        <DataGridTextColumn Header="Aktion" Binding="{Binding Aktion}" />
+        <DataGridTextColumn Header="Feld" Binding="{Binding Feld}" />
+        <DataGridTextColumn Header="Alt" Binding="{Binding Alt}" />
+        <DataGridTextColumn Header="Neu" Binding="{Binding Neu}" />
+        <DataGridTextColumn Header="Begründung" Binding="{Binding Begruendung}" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

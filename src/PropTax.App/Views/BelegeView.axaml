@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             xmlns:app="using:PropTax.Application"
+             x:Class="PropTax.App.Views.BelegeView"
+             x:DataType="vm:BelegeViewModel">
+  <Grid ColumnDefinitions="3*,6,2*">
+    <!-- Liste -->
+    <DockPanel Grid.Column="0">
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
+        <TextBox Text="{Binding Suchtext}" PlaceholderText="Suche: Belegnummer, Partner, Notiz" Width="300" />
+        <ComboBox ItemsSource="{Binding StatusFilterWerte}" SelectedItem="{Binding StatusFilter}" Width="120" />
+        <Button Content="Suchen" Command="{Binding AktualisierenCommand}" />
+        <Button Content="Neuer Beleg" Command="{Binding NeuCommand}" />
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+        <TextBlock Classes="label" Text="Markierte:" />
+        <Button Content="Entwürfe buchen" Click="MarkierteBuchen" />
+        <ComboBox ItemsSource="{Binding EuerKategorien}" SelectedItem="{Binding MehrfachKategorie}" Width="260" PlaceholderText="EÜR-Kategorie">
+          <ComboBox.ItemTemplate><DataTemplate x:DataType="app:EuerKategorieDaten"><TextBlock Text="{Binding Bezeichnung}" /></DataTemplate></ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Content="Kategorie setzen" Click="MarkierteKategorie" />
+      </StackPanel>
+      <DataGrid x:Name="Liste" ItemsSource="{Binding Belege}" SelectedItem="{Binding Auswahl}" SelectionMode="Extended"
+                IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True" x:CompileBindings="False">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Beleg" Binding="{Binding Belegnummer}" />
+          <DataGridTextColumn Header="Datum" Binding="{Binding Datum}" />
+          <DataGridTextColumn Header="Typ" Binding="{Binding Typ}" />
+          <DataGridTextColumn Header="Partner" Binding="{Binding Partner}" />
+          <DataGridTextColumn Header="Betrag" Binding="{Binding Betrag}" />
+          <DataGridTextColumn Header="BMG €" Binding="{Binding Bmg}" />
+          <DataGridTextColumn Header="USt €" Binding="{Binding Steuer}" />
+          <DataGridTextColumn Header="VSt €" Binding="{Binding Vorsteuer}" />
+          <DataGridTextColumn Header="Zeitraum" Binding="{Binding Zeitraum}" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+          <DataGridTextColumn Header="Hinweise" Binding="{Binding Hinweise}" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" />
+
+    <!-- Editor -->
+    <ScrollViewer Grid.Column="2">
+      <StackPanel Margin="8,0,4,0" Spacing="4">
+        <TextBlock Classes="h2" Text="{Binding EditorTitel}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <ComboBox x:Name="Vorlage" ItemsSource="{Binding Vorlagen}" PlaceholderText="Vorlage…" Width="220">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:VorlageDaten"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Content="Übernehmen" Command="{Binding AusVorlageCommand}" CommandParameter="{Binding #Vorlage.SelectedItem}" />
+        </StackPanel>
+        <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+          <TextBlock Classes="label" Grid.Row="0" Text="Belegnummer" /><TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Belegnummer}" />
+          <TextBlock Classes="label" Grid.Row="1" Text="Betrieb" />
+          <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Betriebe}" SelectedItem="{Binding Betrieb}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:BetriebDaten"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="2" Text="Partner" />
+          <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Partner}" SelectedItem="{Binding PartnerAuswahl}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:PartnerDaten"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="3" Text="Belegtyp" />
+          <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Belegtypen}" SelectedItem="{Binding Typ}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="4" Text="Richtung" />
+          <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Richtungen}" SelectedItem="{Binding Richtung}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="5" Text="Rechnungsdatum" /><CalendarDatePicker Grid.Row="5" Grid.Column="1" SelectedDate="{Binding Rechnungsdatum}" />
+          <TextBlock Classes="label" Grid.Row="6" Text="Leistungsdatum" /><CalendarDatePicker Grid.Row="6" Grid.Column="1" SelectedDate="{Binding Leistungsdatum}" />
+          <TextBlock Classes="label" Grid.Row="7" Text="Zahlungsdatum" /><CalendarDatePicker Grid.Row="7" Grid.Column="1" SelectedDate="{Binding Zahlungsdatum}" />
+          <TextBlock Classes="label" Grid.Row="8" Text="Betrag / Währung" />
+          <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding Betrag}" Width="140" PlaceholderText="99,00" /><TextBox Text="{Binding Waehrung}" Width="70" />
+          </StackPanel>
+          <TextBlock Classes="label" Grid.Row="9" Text="Ausgew. USt (€)" /><TextBox Grid.Row="9" Grid.Column="1" Text="{Binding AusgewieseneUst}" PlaceholderText="nur Inlandsrechnungen" />
+          <TextBlock Classes="label" Grid.Row="10" Text="EÜR-Kategorie" />
+          <ComboBox Grid.Row="10" Grid.Column="1" ItemsSource="{Binding EuerKategorien}" SelectedItem="{Binding EuerKategorie}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:EuerKategorieDaten"><TextBlock Text="{Binding Bezeichnung}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="11" Text="Ursprungsbeleg" />
+          <ComboBox Grid.Row="11" Grid.Column="1" ItemsSource="{Binding BuchbareBezuege}" SelectedItem="{Binding Bezug}" HorizontalAlignment="Stretch" PlaceholderText="nur bei Erstattung">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:BelegZeileVm"><TextBlock Text="{Binding Belegnummer}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Classes="label" Grid.Row="12" Text="Notiz" /><TextBox Grid.Row="12" Grid.Column="1" Text="{Binding Notiz}" />
+        </Grid>
+
+        <Expander Header="Manuelle Übersteuerung (mit Begründung)" IsExpanded="{Binding UebersteuerungAktiv}">
+          <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+            <TextBlock Classes="label" Text="Steuerschuldner" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding Steuerschuldner_}" SelectedItem="{Binding UeSteuerschuldner}" HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Classes="label" Grid.Row="1" Text="Steuersatz %" /><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding UeSatz}" PlaceholderText="leer = laut Regel" />
+            <TextBlock Classes="label" Grid.Row="2" Text="Kurs (1 EUR =)" /><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding UeKurs}" PlaceholderText="leer = BMF-Monatskurs" />
+            <TextBlock Classes="label" Grid.Row="3" Text="Begründung" /><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UeBegruendung}" />
+          </Grid>
+        </Expander>
+
+        <WrapPanel>
+          <Button Content="Berechnen" Command="{Binding BerechnenCommand}" />
+          <Button Content="Als Entwurf speichern" Command="{Binding EntwurfSpeichernCommand}" IsVisible="{Binding !IstGebucht}" />
+          <Button Content="Buchen" Command="{Binding BuchenCommand}" IsVisible="{Binding !IstGebucht}" Classes="accent" />
+        </WrapPanel>
+
+        <Border BorderBrush="#DDD" BorderThickness="1" Padding="6" IsVisible="{Binding BearbeiteterId, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="hinweis" Text="Gebuchte Belege: Ändern nur in offener Periode, sonst Storno/Korrektur. Begründung ist Pflicht." />
+            <TextBox Text="{Binding Begruendung}" PlaceholderText="Begründung" />
+            <WrapPanel>
+              <Button Content="Gebucht ändern" Command="{Binding GebuchtAendernCommand}" IsVisible="{Binding IstGebucht}" />
+              <CalendarDatePicker SelectedDate="{Binding Stornodatum}" IsVisible="{Binding IstGebucht}" Margin="0,0,6,6" />
+              <Button Content="Stornieren" Command="{Binding StornierenCommand}" IsVisible="{Binding IstGebucht}" />
+              <Button Content="Entwurf löschen" Command="{Binding EntwurfLoeschenCommand}" IsVisible="{Binding !IstGebucht}" />
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2" Text="Steuerergebnis" />
+        <SelectableTextBlock Text="{Binding Vorschau}" TextWrapping="Wrap" FontFamily="Consolas,Menlo,monospace" FontSize="12" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

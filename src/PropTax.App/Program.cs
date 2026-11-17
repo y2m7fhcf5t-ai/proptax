@@ -11,6 +11,8 @@ internal static class Program
         var de = CultureInfo.GetCultureInfo("de-DE");
         CultureInfo.DefaultThreadCurrentCulture = de;
         CultureInfo.DefaultThreadCurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
 
         // Smoke-Test für CI: startet ohne UI, prüft Kernabhängigkeiten.
         if (args.Contains("--selftest"))

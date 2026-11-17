@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PropTax.App.ViewModels"
+             xmlns:app="using:PropTax.Application"
+             x:Class="PropTax.App.Views.StammdatenView"
+             x:DataType="vm:StammdatenViewModel">
+  <TabControl>
+    <TabItem Header="Geschäftspartner">
+      <Grid ColumnDefinitions="*,8,380">
+        <DataGrid ItemsSource="{Binding Partner}" SelectedItem="{Binding PartnerAuswahl}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+            <DataGridTextColumn Header="Land" Binding="{Binding LandIso}" />
+            <DataGridTextColumn Header="Kategorie" Binding="{Binding Kategorie, TargetNullValue='⚠ ungeklärt'}" />
+            <DataGridCheckBoxColumn Header="Prop-Firma" Binding="{Binding IstPropFirma}" />
+            <DataGridCheckBoxColumn Header="Aktiv" Binding="{Binding Aktiv}" />
+            <DataGridTextColumn Header="USt-IdNr./Tax-ID" Binding="{Binding UstIdnr}" />
+          </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="2" Spacing="4">
+          <TextBlock Classes="hinweis" Text="Land = Sitz des Rechnungsstellers laut Rechnung. Die Kategorie (Inland/EU/Drittland) wird daraus abgeleitet, sofern nicht übersteuert." />
+          <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+            <TextBlock Classes="label" Text="Name" /><TextBox Grid.Column="1" Text="{Binding PartnerName}" />
+            <TextBlock Classes="label" Grid.Row="1" Text="Land (ISO)" /><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Land}" PlaceholderText="z. B. US, AE, GB, IE" />
+            <TextBlock Classes="label" Grid.Row="2" Text="Kategorie" />
+            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Kategorien}" SelectedItem="{Binding Kategorie}" HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Classes="label" Grid.Row="3" Text="USt-IdNr." /><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UstIdnr}" />
+            <TextBlock Classes="label" Grid.Row="4" Text="Tax-ID" /><TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TaxId}" />
+            <TextBlock Classes="label" Grid.Row="5" Text="Standard-Belegtyp" />
+            <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Belegtypen}" SelectedItem="{Binding StdBelegtyp}" HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="12">
+              <CheckBox Content="Prop-Firma" IsChecked="{Binding IstPropFirma}" /><CheckBox Content="Aktiv" IsChecked="{Binding PartnerAktiv}" />
+            </StackPanel>
+            <TextBlock Classes="label" Grid.Row="7" Text="Notiz" /><TextBox Grid.Row="7" Grid.Column="1" Text="{Binding PartnerNotiz}" />
+          </Grid>
+          <WrapPanel>
+            <Button Content="Speichern" Command="{Binding PartnerSpeichernCommand}" Classes="accent" />
+            <Button Content="Neuer Partner" Command="{Binding NeuerPartnerCommand}" />
+          </WrapPanel>
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Betriebe">
+      <Grid ColumnDefinitions="*,8,380">
+        <DataGrid ItemsSource="{Binding Betriebe}" SelectedItem="{Binding BetriebAuswahl}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" /><DataGridTextColumn Header="Kürzel" Binding="{Binding Kurzzeichen}" />
+          </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="2" Spacing="4">
+          <TextBox Text="{Binding BetriebName}" PlaceholderText="Name" /><TextBox Text="{Binding BetriebKurz}" PlaceholderText="Kürzel" />
+          <WrapPanel><Button Content="Speichern" Command="{Binding BetriebSpeichernCommand}" /><Button Content="Neuer Betrieb" Command="{Binding NeuerBetriebCommand}" /></WrapPanel>
+          <TextBlock Classes="hinweis" Text="Alle Betriebe bilden ein umsatzsteuerliches Unternehmen (gemeinsame USt-VA und §19-Grenze); die EÜR wird je Betrieb geführt." />
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="Vorlagen">
+      <Grid ColumnDefinitions="*,8,380">
+        <DataGrid ItemsSource="{Binding Vorlagen}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Name" Binding="{Binding Name}" /><DataGridTextColumn Header="Typ" Binding="{Binding Typ}" />
+            <DataGridTextColumn Header="Betrag" Binding="{Binding Betrag}" />
+          </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="2" Spacing="4">
+          <TextBox Text="{Binding VorlageName}" PlaceholderText="Name, z. B. FN Challenge 100k" />
+          <ComboBox ItemsSource="{Binding Betriebe}" SelectedItem="{Binding VorlageBetrieb}" PlaceholderText="Betrieb" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:BetriebDaten"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <ComboBox ItemsSource="{Binding Partner}" SelectedItem="{Binding VorlagePartner}" PlaceholderText="Partner" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:PartnerDaten"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <ComboBox ItemsSource="{Binding VorlageTypen}" SelectedItem="{Binding VorlageTyp}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={x:Static vm:EnumAnzeigeKonverter.Instanz}}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <StackPanel Orientation="Horizontal" Spacing="6"><TextBox Text="{Binding VorlageBetrag}" PlaceholderText="Betrag" Width="140" /><TextBox Text="{Binding VorlageWaehrung}" Width="70" /></StackPanel>
+          <ComboBox ItemsSource="{Binding EuerKategorien}" SelectedItem="{Binding VorlageKategorie}" PlaceholderText="EÜR-Kategorie" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate><DataTemplate x:DataType="app:EuerKategorieDaten"><TextBlock Text="{Binding Bezeichnung}" /></DataTemplate></ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Content="Vorlage speichern" Command="{Binding VorlageSpeichernCommand}" />
+        </StackPanel>
+      </Grid>
+    </TabItem>
+    <TabItem Header="EÜR-Kategorien">
+      <DataGrid ItemsSource="{Binding EuerKategorien}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Code" Binding="{Binding Code}" /><DataGridTextColumn Header="Bezeichnung" Binding="{Binding Bezeichnung}" />
+          <DataGridTextColumn Header="Art" Binding="{Binding Art}" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </TabItem>
+  </TabControl>
+</UserControl>
