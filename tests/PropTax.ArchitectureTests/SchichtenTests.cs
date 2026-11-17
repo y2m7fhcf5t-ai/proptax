@@ -1,14 +1,14 @@
 using System.Reflection;
 using NetArchTest.Rules;
 using PropTax.Domain.Werte;
-using PropTax.TaxEngine.Abstraktionen;
+using PropTax.TaxEngine.Regelwerk;
 
 namespace PropTax.ArchitectureTests;
 
 public class SchichtenTests
 {
     private static readonly Assembly Domain = typeof(Money).Assembly;
-    private static readonly Assembly Engine = typeof(IRegelQuelle).Assembly;
+    private static readonly Assembly Engine = typeof(IRegelwerk).Assembly;
 
     [Fact]
     public void Domain_hat_keine_Projektabhaengigkeiten() =>
