@@ -8,4 +8,7 @@
     <InvariantGlobalization>false</InvariantGlobalization>
     <SatelliteResourceLanguages>de</SatelliteResourceLanguages>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
 </Project>

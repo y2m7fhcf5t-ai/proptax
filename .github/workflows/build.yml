@@ -1,0 +1,48 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build -c Release
+      - run: dotnet test -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/**/coverage.cobertura.xml
+
+  windows:
+    runs-on: windows-latest
+    needs: test-linux
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test -c Release
+      - name: Publish Single-File
+        run: dotnet publish src/PropTax.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
+      - name: Smoke-Test
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath publish/win-x64/PropTax.App.exe -ArgumentList '--selftest' -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "Selftest fehlgeschlagen ($($p.ExitCode))" }
+          "{0:N1} MB" -f ((Get-Item publish/win-x64/PropTax.App.exe).Length / 1MB)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PropTax-win-x64
+          path: publish/win-x64/PropTax.App.exe
