@@ -17,7 +17,7 @@
           <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
             <TextBlock Classes="label" Text="Zeitraum" />
             <ComboBox ItemsSource="{Binding Zeitraeume}" SelectedItem="{Binding Zeitraum}" Width="140" />
-            <Button Content="Als XLSX exportieren…" Command="{Binding VaXlsxCommand}" />
+            <Button Content="XLSX…" Command="{Binding VaXlsxCommand}" /><Button Content="PDF…" Command="{Binding VaPdfCommand}" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Text="{Binding VaKopf}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,0,0,6" />
           <TextBlock DockPanel.Dock="Bottom" Classes="hinweis" Text="Kennzahlen-Zuordnung ungeprüft (TODO-STEUER O-05). Formularwert: Bemessungsgrundlagen in vollen Euro (O-08). Keine ELSTER-Übermittlung." />
@@ -89,7 +89,7 @@
             <ComboBox ItemsSource="{Binding Betriebe}" SelectedItem="{Binding Betrieb}" Width="220">
               <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name, FallbackValue='Gesamt (alle Betriebe)', TargetNullValue='Gesamt (alle Betriebe)'}" x:CompileBindings="False" /></DataTemplate></ComboBox.ItemTemplate>
             </ComboBox>
-            <Button Content="XLSX…" Command="{Binding EuerXlsxCommand}" /><Button Content="CSV…" Command="{Binding EuerCsvCommand}" />
+            <Button Content="XLSX…" Command="{Binding EuerXlsxCommand}" /><Button Content="CSV…" Command="{Binding EuerCsvCommand}" /><Button Content="PDF…" Command="{Binding EuerPdfCommand}" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Text="{Binding EuerSumme}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4" />
           <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding EuerHinweise}" Foreground="#9A6700" Margin="0,0,0,6" />

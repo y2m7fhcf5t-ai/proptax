@@ -31,6 +31,11 @@ public partial class MainWindow : Window, IDialoge
         return datei?.TryGetLocalPath();
     }
 
+    public void Oeffnen(string pfad) =>
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(pfad) { UseShellExecute = true });
+
+    public void Beenden() => Close();
+
     public async Task<string?> OrdnerWaehlen(string titel)
     {
         var ordner = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = titel, AllowMultiple = false });

@@ -257,6 +257,10 @@ public sealed partial class AuswertungenViewModel : VmBasis
         ? Exportiere($"UStVA_{zr}", "xlsx", z => Ab.Auswertungen.ExportiereTabelle(Ab.Auswertungen.UstVaTabelle(zr), z, ExportFormat.Xlsx))
         : Task.CompletedTask;
     [RelayCommand] public Task EuerXlsx() => Exportiere($"EUER_{(int)Jahr}_{Betrieb?.Name ?? "Gesamt"}", "xlsx", z => Ab.Auswertungen.ExportiereTabelle(Ab.Auswertungen.EuerTabelle((int)Jahr, Betrieb?.Id), z, ExportFormat.Xlsx));
+    [RelayCommand] public Task VaPdf() => Zeitraum is { } zr
+        ? Exportiere($"UStVA_{zr}", "pdf", z => Ab.Auswertungen.ExportiereTabelle(Ab.Auswertungen.UstVaTabelle(zr), z, ExportFormat.Pdf))
+        : Task.CompletedTask;
+    [RelayCommand] public Task EuerPdf() => Exportiere($"EUER_{(int)Jahr}_{Betrieb?.Name ?? "Gesamt"}", "pdf", z => Ab.Auswertungen.ExportiereTabelle(Ab.Auswertungen.EuerTabelle((int)Jahr, Betrieb?.Id), z, ExportFormat.Pdf));
     [RelayCommand] public Task EuerCsv() => Exportiere($"EUER_{(int)Jahr}_{Betrieb?.Name ?? "Gesamt"}", "csv", z => Ab.Auswertungen.ExportiereTabelle(Ab.Auswertungen.EuerTabelle((int)Jahr, Betrieb?.Id), z, ExportFormat.Csv));
 
     private async Task Exportiere(string vorschlag, string endung, Action<string> aktion)

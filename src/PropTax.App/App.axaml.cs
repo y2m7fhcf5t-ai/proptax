@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using PropTax.App.ViewModels;
@@ -24,12 +25,39 @@ public partial class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var ab = Arbeitsbereich.Oeffne(Konfiguration.Datenordner(), Environment.UserName);
-            var fenster = new MainWindow();
-            fenster.DataContext = new MainViewModel(ab, fenster);
-            desktop.MainWindow = fenster;
+            var ordner = Konfiguration.Datenordner();
+            if (Arbeitsbereich.BenoetigtPasswort(ordner))
+            {
+                PasswortWindow? dialog = null;
+                dialog = new PasswortWindow(ordner, pw =>
+                {
+                    try
+                    {
+                        var ab = Arbeitsbereich.Oeffne(ordner, Environment.UserName, passwort: pw);
+                        desktop.MainWindow = Hauptfenster(ab, desktop);
+                        desktop.MainWindow.Show();
+                        dialog!.Close();
+                        return null;
+                    }
+                    catch (PasswortErforderlichException e) { return e.Message; }
+                });
+                desktop.MainWindow = dialog;
+            }
+            else
+            {
+                desktop.MainWindow = Hauptfenster(Arbeitsbereich.Oeffne(ordner, Environment.UserName), desktop);
+            }
         }
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static Window Hauptfenster(Arbeitsbereich ab, IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var fenster = new MainWindow();
+        var vm = new MainViewModel(ab, fenster);
+        fenster.DataContext = vm;
+        fenster.Closing += (_, _) => vm.SicherungBeimBeenden();
+        return fenster;
     }
 }
 

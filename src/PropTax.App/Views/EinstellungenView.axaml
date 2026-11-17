@@ -8,7 +8,41 @@
     <StackPanel Spacing="6" MaxWidth="900" HorizontalAlignment="Left">
       <TextBlock Classes="h2" Text="Datenordner" />
       <SelectableTextBlock Text="{Binding Datenordner}" />
-      <TextBlock Classes="hinweis" Text="Enthält die Datenbank (proptax.db) und alle Belegdateien (belege/). Für ein Backup genügt eine Kopie dieses Ordners bei geschlossener Anwendung." />
+      <TextBlock Classes="hinweis" Text="Enthält die Datenbank (proptax.db), alle Belegdateien (belege/) und Sicherungen (backup/)." />
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Button Content="Datenordner wechseln…" Command="{Binding DatenordnerWechselnCommand}" />
+        <TextBlock Classes="label" Text="{Binding Version, StringFormat='Programmversion {0}'}" />
+      </StackPanel>
+
+      <TextBlock Classes="h2" Text="Datensicherung" />
+      <TextBlock Classes="hinweis" Text="Beim Beenden wird automatisch gesichert (backup/auto_*.zip, die letzten 30 werden behalten). Manuelle Sicherungen werden nie automatisch gelöscht. Wiederherstellen legt vorher eine Sicherheitskopie an und beendet PropTax." />
+      <DataGrid ItemsSource="{Binding Sicherungen}" SelectedItem="{Binding SicherungAuswahl}" IsReadOnly="True" AutoGenerateColumns="False" MaxHeight="220" x:CompileBindings="False">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Datei" Binding="{Binding Datei}" /><DataGridTextColumn Header="Erstellt" Binding="{Binding Erstellt}" />
+          <DataGridTextColumn Header="Art" Binding="{Binding Art}" /><DataGridTextColumn Header="Verschlüsselt" Binding="{Binding Verschluesselt}" />
+          <DataGridTextColumn Header="Inhalt" Binding="{Binding Inhalt}" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <WrapPanel>
+        <Button Content="Jetzt sichern" Command="{Binding JetztSichernCommand}" Classes="accent" />
+        <TextBox Text="{Binding PwSicherung}" PasswordChar="●" PlaceholderText="Passwort der Sicherung (falls verschlüsselt)" Width="300" Margin="0,0,6,6" />
+        <Button Content="Markierte bzw. Datei wiederherstellen…" Command="{Binding WiederherstellenCommand}" />
+        <Button Content="Unverschlüsselte Sicherungen löschen" Command="{Binding UnverschluesselteLoeschenCommand}" />
+      </WrapPanel>
+
+      <TextBlock Classes="h2" Text="Verschlüsselung der Datenbank" />
+      <TextBlock Text="{Binding VerschluesselungsStatus}" TextWrapping="Wrap" FontWeight="SemiBold" />
+      <TextBlock Classes="hinweis" Text="Das Passwort wird nicht gespeichert und kann nicht wiederhergestellt werden – ohne Passwort sind die Daten verloren. Für die Belegdateien wird zusätzlich BitLocker empfohlen." />
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBox Text="{Binding PwAlt}" PasswordChar="●" PlaceholderText="bisheriges Passwort" Width="200" IsVisible="{Binding IstVerschluesselt}" />
+        <TextBox Text="{Binding PwNeu}" PasswordChar="●" PlaceholderText="neues Passwort (mind. 10 Zeichen)" Width="240" />
+        <TextBox Text="{Binding PwWiederholung}" PasswordChar="●" PlaceholderText="Wiederholung" Width="200" />
+      </StackPanel>
+      <WrapPanel>
+        <Button Content="Verschlüsseln" Command="{Binding VerschluesselnCommand}" IsVisible="{Binding !IstVerschluesselt}" Classes="accent" />
+        <Button Content="Passwort ändern" Command="{Binding PasswortAendernCommand}" IsVisible="{Binding IstVerschluesselt}" />
+        <Button Content="Verschlüsselung entfernen" Command="{Binding VerschluesselungEntfernenCommand}" IsVisible="{Binding IstVerschluesselt}" />
+      </WrapPanel>
 
       <TextBlock Classes="h2" Text="Aktueller Stand" />
       <TextBlock Text="{Binding AktuellerStand}" TextWrapping="Wrap" />

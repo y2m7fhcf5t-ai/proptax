@@ -28,6 +28,10 @@ internal sealed class KeineDialoge : IDialoge
     public string? Speichern { get; set; }
     public Task<string?> DateiSpeichern(string titel, string vorschlag, string endung) =>
         Task.FromResult(Speichern is null ? null : Path.Combine(Speichern, vorschlag));
+    public List<string> Geoeffnet { get; } = [];
+    public void Oeffnen(string pfad) => Geoeffnet.Add(pfad);
+    public bool Beendet { get; private set; }
+    public void Beenden() => Beendet = true;
 }
 
 public sealed class UiTests : IDisposable
@@ -268,6 +272,94 @@ public sealed class UiTests : IDisposable
             Assert.NotNull(bild);
             if (!string.IsNullOrEmpty(screenshot)) bild!.Save(Path.Combine(screenshot, name + ".png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
+    }
+
+    [AvaloniaFact]
+    public async Task Sicherung_Verschluesselung_Exporte_und_Dokument_oeffnen()
+    {
+        Testdaten();
+        var pdf = Path.Combine(_ordner, "rechnung.pdf");
+        File.WriteAllText(pdf, "%PDF");
+        var beleg = _ab.Belege.Liste().First(b => b.Daten.Belegnummer == "FN-1001").Id;
+        _ab.Dokumente.Zuordnen(beleg, _ab.Dokumente.Ablegen(pdf).Id);
+        var (fenster, vm) = Starte();
+
+        // Dokument öffnen aus der Belegmaske
+        vm.Belege.Auswahl = vm.Belege.Belege.First(b => b.Belegnummer == "FN-1001");
+        var dok = Assert.Single(vm.Belege.Dokumente);
+        vm.Belege.DokumentOeffnenCommand.Execute(dok);
+        Assert.EndsWith(".pdf", Assert.Single(_dialoge.Geoeffnet));
+
+        // Exporte Belegliste und Protokoll
+        var ziel = Path.Combine(_ordner, "exp");
+        Directory.CreateDirectory(ziel);
+        _dialoge.Speichern = ziel;
+        await vm.Belege.ListeXlsxCommand.ExecuteAsync(null);
+        await vm.Belege.ListeCsvCommand.ExecuteAsync(null);
+        await vm.Belege.ListePdfCommand.ExecuteAsync(null);
+        await vm.Protokoll.ExportPdfCommand.ExecuteAsync(null);
+        await vm.Protokoll.ExportXlsxCommand.ExecuteAsync(null);
+        await vm.Protokoll.ExportCsvCommand.ExecuteAsync(null);
+        await vm.Auswertungen.VaPdfCommand.ExecuteAsync(null);
+        await vm.Auswertungen.EuerPdfCommand.ExecuteAsync(null);
+        Assert.Equal(8, Directory.GetFiles(ziel).Length);
+
+        // Sicherung + Verschlüsselung
+        var e = vm.Einstellungen;
+        e.JetztSichern();
+        Assert.Single(e.Sicherungen);
+        e.PwNeu = "kurz";
+        e.PwWiederholung = "kurz";
+        e.Verschluesseln();
+        Assert.True(vm.Status.IstFehler);
+        e.PwNeu = e.PwWiederholung = "ein-sicheres-passwort";
+        e.Verschluesseln();
+        Assert.False(vm.Status.IstFehler, vm.Status.Text);
+        Assert.True(e.IstVerschluesselt);
+        Assert.Contains("unverschlüsselt", vm.Status.Text);
+        e.Begruendung = "nach Verschlüsselung";
+        e.UnverschluesselteLoeschen();
+        Assert.All(e.Sicherungen, s => Assert.Equal("ja", s.Verschluesselt));
+        Assert.Contains("🔒", vm.Titel);
+        vm.Reiter = 6;
+        e.Aktualisieren();
+        Dispatch();
+        if (Environment.GetEnvironmentVariable("PROPTAX_SCREENSHOT_DIR") is { Length: > 0 } dir)
+            fenster.CaptureRenderedFrame()!.Save(Path.Combine(dir, "einstellungen.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+
+        // Auto-Sicherung beim Beenden genau einmal
+        Assert.NotNull(vm.SicherungBeimBeenden());
+        Assert.Null(vm.SicherungBeimBeenden());
+        Assert.Single(_ab.Sicherungen.Liste(), s => s.Automatisch);
+
+        // Wiederherstellen der ausgewählten Sicherung → App wird beendet
+        e.Aktualisieren();
+        e.SicherungAuswahl = e.Sicherungen.First();
+        e.PwSicherung = "ein-sicheres-passwort";
+        await e.WiederherstellenCommand.ExecuteAsync(null);
+        Assert.True(_dialoge.Beendet, vm.Status.Text);
+        Assert.True(Arbeitsbereich.BenoetigtPasswort(_ordner));
+        _ = fenster;
+    }
+
+    [AvaloniaFact]
+    public void Passwortfenster_drei_Versuche()
+    {
+        var versuche = 0;
+        var w = new PasswortWindow(_ordner, pw => { versuche++; return pw == "richtig" ? null : "Das Passwort ist falsch."; });
+        w.Show();
+        var ok = w.FindControl<Button>("Ok")!;
+        var feld = w.FindControl<TextBox>("Passwort")!;
+        var meldung = w.FindControl<TextBlock>("Meldung")!;
+        feld.Text = "falsch";
+        ok.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Assert.Contains("1/3", meldung.Text);
+        feld.Text = "richtig";
+        ok.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(2, versuche);
+        Assert.Contains("1/3", meldung.Text);
+        for (var i = 0; i < 2; i++) { feld.Text = "x"; ok.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); }
+        Assert.Contains("Zu viele Versuche", meldung.Text);
     }
 
     private static void Dispatch() => Avalonia.Threading.Dispatcher.UIThread.RunJobs();

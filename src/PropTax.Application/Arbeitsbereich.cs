@@ -34,6 +34,9 @@ public sealed class Arbeitsbereich
     public int SchemaVersion { get; private set; }
     internal Datenbank Db { get; set; }
 
+    /// <summary>True, wenn die Datenbank im Ordner verschlüsselt ist (Passwortabfrage beim Start nötig).</summary>
+    public static bool BenoetigtPasswort(string datenordner) => Datenbank.IstVerschluesselt(Path.Combine(datenordner, DateinameDb));
+
     /// <summary>Höchste Schema-Version, die dieses Programm kennt.</summary>
     public static int UnterstuetzteSchemaVersion => Datenbank.Skripte().Max(s => s.Version);
     internal DateTimeOffset Jetzt => Zeit.GetUtcNow();

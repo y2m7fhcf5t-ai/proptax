@@ -13,6 +13,10 @@ public interface IDialoge
     Task<string?> DateiOeffnen(string titel, params string[] endungen);
     Task<string?> OrdnerWaehlen(string titel);
     Task<string?> DateiSpeichern(string titel, string vorschlag, string endung);
+    /// <summary>Öffnet eine Datei mit dem Standardprogramm des Systems.</summary>
+    void Oeffnen(string pfad);
+    /// <summary>Beendet die Anwendung (z. B. nach Wiederherstellung oder Ordnerwechsel).</summary>
+    void Beenden();
 }
 
 /// <summary>Gemeinsame Statusleiste für Erfolgs- und Fehlermeldungen.</summary>
@@ -29,6 +33,15 @@ public abstract class VmBasis(Arbeitsbereich ab, Statusleiste status) : Observab
 {
     protected static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
     protected Arbeitsbereich Ab { get; } = ab;
+
+    /// <summary>Gemeinsamer Export einer Tabelle über den Speichern-Dialog.</summary>
+    protected async Task ExportiereTabelle(IDialoge dialoge, Func<PropTax.Reporting.Tabelle> tabelle, string name, string endung)
+    {
+        var ziel = await dialoge.DateiSpeichern("Export speichern", $"{name}.{endung}", endung);
+        if (ziel is null) return;
+        var format = endung switch { "pdf" => ExportFormat.Pdf, "csv" => ExportFormat.Csv, _ => ExportFormat.Xlsx };
+        Versuche(() => Ab.Auswertungen.ExportiereTabelle(tabelle(), ziel, format), $"Gespeichert: {ziel}");
+    }
     public Statusleiste Status { get; } = status;
 
     /// <summary>Führt eine Aktion aus; fachliche Fehler werden als Meldung angezeigt statt die App zu beenden.</summary>

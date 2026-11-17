@@ -35,8 +35,11 @@ public sealed class BelegZeileVm(BelegAnsicht a)
 
 public sealed partial class BelegeViewModel : VmBasis
 {
-    public BelegeViewModel(Arbeitsbereich ab, Statusleiste status) : base(ab, status)
+    private readonly IDialoge _dialoge;
+
+    public BelegeViewModel(Arbeitsbereich ab, Statusleiste status, IDialoge dialoge) : base(ab, status)
     {
+        _dialoge = dialoge;
         Aktualisieren();
         Neu();
     }
@@ -51,6 +54,7 @@ public sealed partial class BelegeViewModel : VmBasis
     public Richtung[] Richtungen { get; } = Enum.GetValues<Richtung>();
     public Steuerschuldner?[] Steuerschuldner_ { get; } = [null, .. Enum.GetValues<Steuerschuldner>().Cast<Steuerschuldner?>()];
     public string[] StatusFilterWerte { get; } = ["Alle", "Entwurf", "Gebucht"];
+    public ObservableCollection<DokumentInfo> Dokumente { get; } = [];
 
     // Filter
     [ObservableProperty] public partial string Suchtext { get; set; } = "";
@@ -103,18 +107,35 @@ public sealed partial class BelegeViewModel : VmBasis
     }
 
     [RelayCommand]
+    public void DokumentOeffnen(DokumentInfo? d)
+    {
+        if (d is null) return;
+        Versuche(() =>
+        {
+            var pfad = Ab.Dokumente.AbsoluterPfad(d);
+            if (!File.Exists(pfad)) throw new FachlicherFehler($"Datei fehlt: {pfad}");
+            _dialoge.Oeffnen(pfad);
+        });
+    }
+
+    private BelegFilter AktuellerFilter() => new()
+    {
+        Suchtext = string.IsNullOrWhiteSpace(Suchtext) ? null : Suchtext,
+        Status = StatusFilter == "Alle" ? null : Enum.Parse<BelegStatus>(StatusFilter),
+    };
+
+    [RelayCommand] public Task ListeXlsx() => ExportiereTabelle(_dialoge, () => Ab.Auswertungen.BelegTabelle(AktuellerFilter()), "Belegliste", "xlsx");
+    [RelayCommand] public Task ListeCsv() => ExportiereTabelle(_dialoge, () => Ab.Auswertungen.BelegTabelle(AktuellerFilter()), "Belegliste", "csv");
+    [RelayCommand] public Task ListePdf() => ExportiereTabelle(_dialoge, () => Ab.Auswertungen.BelegTabelle(AktuellerFilter()), "Belegliste", "pdf");
+
+    [RelayCommand]
     public void Aktualisieren()
     {
         Ersetze(Betriebe, Ab.Stammdaten.Betriebe().Where(b => b.Aktiv));
         Ersetze(Partner, Ab.Stammdaten.Partner().Where(p => p.Aktiv));
         Ersetze(EuerKategorien, Ab.Stammdaten.EuerKategorien());
         Ersetze(Vorlagen, Ab.Stammdaten.Vorlagen());
-        var filter = new BelegFilter
-        {
-            Suchtext = string.IsNullOrWhiteSpace(Suchtext) ? null : Suchtext,
-            Status = StatusFilter == "Alle" ? null : Enum.Parse<BelegStatus>(StatusFilter),
-        };
-        var liste = Ab.Belege.Liste(filter).OrderByDescending(b => b.Daten.Leistungsdatum).ThenByDescending(b => b.Id).Select(b => new BelegZeileVm(b)).ToList();
+        var liste = Ab.Belege.Liste(AktuellerFilter()).OrderByDescending(b => b.Daten.Leistungsdatum).ThenByDescending(b => b.Id).Select(b => new BelegZeileVm(b)).ToList();
         Ersetze(Belege, liste);
         Ersetze(BuchbareBezuege, Ab.Belege.Liste(new BelegFilter { Status = BelegStatus.Gebucht })
             .Where(b => b.StornoVonId is null && b.Daten.Typ != Belegtyp.Erstattung).Select(b => new BelegZeileVm(b)));
@@ -134,6 +155,7 @@ public sealed partial class BelegeViewModel : VmBasis
         Bezug = null;
         UebersteuerungAktiv = false;
         Vorschau = "";
+        Dokumente.Clear();
     }
 
     [RelayCommand]
@@ -233,6 +255,7 @@ public sealed partial class BelegeViewModel : VmBasis
         Uebernehme(a.Daten);
         UebersteuerungAktiv = false;
         Vorschau = a.Steuer is null ? "" : Beschreibe(a.Steuer);
+        Ersetze(Dokumente, Ab.Dokumente.ZuBeleg(a.Id));
     }
 
     private void Uebernehme(BelegDaten d)

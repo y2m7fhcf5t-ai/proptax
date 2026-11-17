@@ -6,6 +6,7 @@
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
       <Button Content="Aktualisieren / Kette prüfen" Command="{Binding AktualisierenCommand}" />
+      <Button Content="XLSX…" Command="{Binding ExportXlsxCommand}" /><Button Content="CSV…" Command="{Binding ExportCsvCommand}" /><Button Content="PDF…" Command="{Binding ExportPdfCommand}" />
       <TextBlock Classes="label" Text="{Binding Kettenstatus}" FontWeight="SemiBold" />
     </StackPanel>
     <DataGrid ItemsSource="{Binding Eintraege}" IsReadOnly="True" AutoGenerateColumns="False" x:CompileBindings="False">

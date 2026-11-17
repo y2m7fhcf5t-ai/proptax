@@ -12,6 +12,9 @@
         <ComboBox ItemsSource="{Binding StatusFilterWerte}" SelectedItem="{Binding StatusFilter}" Width="120" />
         <Button Content="Suchen" Command="{Binding AktualisierenCommand}" />
         <Button Content="Neuer Beleg" Command="{Binding NeuCommand}" />
+        <Button Content="XLSX" Command="{Binding ListeXlsxCommand}" ToolTip.Tip="Belegliste (aktueller Filter) exportieren" />
+        <Button Content="CSV" Command="{Binding ListeCsvCommand}" />
+        <Button Content="PDF" Command="{Binding ListePdfCommand}" />
       </StackPanel>
       <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
         <TextBlock Classes="label" Text="Markierte:" />
@@ -118,6 +121,18 @@
             </WrapPanel>
           </StackPanel>
         </Border>
+
+        <TextBlock Classes="h2" Text="Belegdateien" IsVisible="{Binding Dokumente.Count}" />
+        <ItemsControl ItemsSource="{Binding Dokumente}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="app:DokumentInfo">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Content="Öffnen" Command="{Binding $parent[UserControl].((vm:BelegeViewModel)DataContext).DokumentOeffnenCommand}" CommandParameter="{Binding}" />
+                <TextBlock Classes="label" Text="{Binding Dateiname}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <TextBlock Classes="h2" Text="Steuerergebnis" />
         <SelectableTextBlock Text="{Binding Vorschau}" TextWrapping="Wrap" FontFamily="Consolas,Menlo,monospace" FontSize="12" />
