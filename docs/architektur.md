@@ -5,11 +5,13 @@
 ```mermaid
 flowchart TB
   App["PropTax.App<br/>Avalonia-UI, MVVM, ViewModels"]
+  Anw["PropTax.Application<br/>Use-Case-Services, Arbeitsbereich"]
   Rep["PropTax.Reporting<br/>PDF (QuestPDF), XLSX (ClosedXML), CSV, DATEV-EXTF"]
   Per["PropTax.Persistence<br/>SQLite, Repositories, Protokoll, Festschreibung, Belegablage"]
   Eng["PropTax.TaxEngine<br/>Steuerermittlung, USt-VA-Aggregation, §19-Prüfung"]
   Dom["PropTax.Domain<br/>Entitäten, Wertobjekte (Money, CurrencyAmount), Enums"]
-  App --> Rep & Per & Eng & Dom
+  App --> Anw
+  Anw --> Per & Eng & Dom
   Rep --> Dom
   Per --> Eng & Dom
   Eng --> Dom
@@ -19,9 +21,10 @@ flowchart TB
 |---|---|---|
 | Domain | – | alles andere |
 | TaxEngine | Domain | Persistence, Reporting, App, Avalonia, EF Core, SQLite |
-| Persistence | Domain, TaxEngine (implementiert deren Schnittstellen) | App, Reporting |
+| Persistence | Domain, TaxEngine | Application, App, Reporting, Avalonia |
+| Application | Domain, TaxEngine, Persistence | App, Avalonia |
 | Reporting | Domain (bekommt fertige Auswertungsmodelle) | App, Persistence |
-| App | alle | – |
+| App | Application (transitiv Domain/Engine-Typen) | Persistence, Microsoft.Data.Sqlite, Dapper |
 
 Die Regeln werden durch `tests/PropTax.ArchitectureTests` erzwungen. Dort ist auch das Verbot von
 `double`/`float` in Domain und Engine geprüft.
@@ -40,6 +43,14 @@ Die Regeln werden durch `tests/PropTax.ArchitectureTests` erzwungen. Dort ist au
 3. Buchen → Status `gebucht`, Periodenzuordnung (USt-Periode und EÜR-Periode getrennt)
 4. Festschreibung der Periode → Belege unveränderlich; Änderungen nur per Storno-/Korrekturbeleg
 5. Jede Änderung → `protokoll` (Hash-Kette)
+
+## GoBD-Umsetzung (zweistufig)
+1. **Anwendung:** `Belegaenderung` (Domain) + Services prüfen Periodenstatus und Begründungspflicht und protokollieren.
+2. **Datenbank:** Trigger sperren UPDATE/DELETE an Protokoll, festgeschriebenen Perioden, Belegen und Steuer-Snapshots
+   in festgeschriebenen Zeiträumen sowie das Verschieben hinein. Die Hash-Kette deckt Manipulationen auch
+   bei entfernten Triggern auf (`Protokoll`-Reiter zeigt den Kettenstatus).
+
+![Belegmaske](bilder/belege.png)
 
 ## ERiC-Vorbereitung
 Die USt-VA wird als abstraktes Modell `UstVaDatensatz` (Zeitraum, Kennzahl → Betrag) erzeugt.

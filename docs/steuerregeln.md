@@ -60,6 +60,15 @@ sind konfigurierbar, im Code gibt es keine fachlichen Konstanten.
 | O-06 | Erstattungen §17 UStG | Korrektur im Zeitraum des Erstattungseingangs; Kurs per `erstattung.kurs` = `ORIGINAL` (Start) oder `ERSTATTUNGSMONAT`; Teilerstattungen anteilig. | ungeprüft |
 | O-07 | Entstehung §13b-Steuer vs. Ist-Versteuerung | Ist-Versteuerung (§20) gilt nur für eigene Umsätze. §13b Abs. 1: Ablauf VA-Zeitraum der Leistung; Abs. 2: Rechnungsausstellung, spätestens Ablauf Folgemonat; Vorauszahlung: mit Zahlung (Abs. 4 S. 2). Bestimmt USt-Zeitraum und Monatskurs; EÜR nach Zahlung (§11 EStG). | ungeprüft |
 | O-08 | Formularrundung | BMG-Kennzahlen im Formular in vollen Euro (Start: abschneiden, alternativ kaufmännisch), Steuer centgenau. Interne Werte bleiben centgenau. | ungeprüft |
-| O-09 | Onlinehandel: OSS / Fernverkäufe EU, B2C-Drittland | Nicht umgesetzt. Bisher nur Inlandsverkäufe (`AUSGANG_INLAND_REGELSATZ`). | offen |
+| O-09 | Onlinehandel: OSS / Fernverkäufe EU, B2C-Drittland | Laut Nutzer keine EU-B2C-Fernverkäufe → nicht umgesetzt. Bei Änderung neu bewerten. | geschlossen (nicht relevant) |
 | O-10 | Brutto/Netto-Interpretation eigener Umsätze bei Regelbesteuerung | Einstellung `betrag_ist.<Belegtyp>` = `BRUTTO` (Start) oder `NETTO`. | ungeprüft |
 | O-11 | Erstattung nach Wechsel der Besteuerungsart | Korrektur mit der Besteuerungsart des Ursprungsbelegs (inkl. Vorsteuer). Bei Wechsel KU ↔ Regel ggf. §15a/§17-Sonderfälle prüfen. | offen |
+
+## Hinweise aus Phase 3 (Stammdaten)
+- Vorbelegte Prop-Firmen (IQ Capital, Funded Next, 4Prop, LucidTrading, Tradifei) haben **kein Land**: Kategorie
+  (Inland/EU/Drittland) ist bewusst nicht geraten. Maßgeblich ist der **Rechnungssteller laut Rechnung**
+  (z. B. kann eine Marke mehrere Gesellschaften in verschiedenen Ländern nutzen). Ohne Kategorie sind Belege nicht buchbar.
+- Kategorie wird aus dem Land abgeleitet: DE → Inland, EU-Mitglied → EU, sonst Drittland (GB seit 2021 Drittland);
+  je Partner übersteuerbar. Nordirland (XI) ist nicht abgebildet.
+- Storno: negiertes Steuerergebnis im USt-Zeitraum des Stornodatums (Korrektur einer Fehlbuchung).
+  Fachliche Erstattungen laufen dagegen über Belegtyp „Erstattung“ (§17, O-06).

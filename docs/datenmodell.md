@@ -75,8 +75,10 @@ erDiagram
 - **beleg.richtung**: `EINGANG` (Leistungsbezug) | `AUSGANG` (eigene Leistung/Einnahme)
 - **Drei Daten:** `rechnungsdatum`, `leistungsdatum` und `zahlungsdatum`. Die EÜR nutzt das Zahlungsdatum (§11 EStG),
   die USt-Periode wird über `steuerregel.entstehung` bestimmt (siehe `docs/steuerregeln.md`, O-07).
-- **status**: `ENTWURF | GEBUCHT | STORNIERT`. Ein gebuchter Beleg in einer festgeschriebenen Periode wird nie geändert.
+- **status**: `Entwurf | Gebucht`. „Storniert“ wird abgeleitet (es existiert ein Beleg mit `storno_von_id` = id),
+  damit das Original auch in festgeschriebenen Perioden unverändert bleibt.
 - **storno_von_id / korrektur_von_id**: Ein Storno ist ein Gegenbeleg mit negativen Beträgen, eine Korrektur ein neuer Beleg.
+- **euer_periode**: Jahr des Zahlungsdatums (§11 EStG), NULL = noch nicht bezahlt.
 - **bezug_beleg_id**: Eine Erstattung verweist auf die ursprüngliche Gebühr (§17 UStG).
 - **dubletten_schluessel**: SHA-256 über normalisierte Felder (Partner, Datum, Betrag, Währung, Belegnummer).
   Er ist nicht `UNIQUE`, Dubletten werden beim Import gewarnt.
@@ -124,3 +126,12 @@ erDiagram
   bilden die Tabellen 1:1 ab; die Persistenz implementiert in Phase 3 `IRegelwerk` gegen SQLite.
 - Startwerte werden beim Anlegen einer neuen DB aus `regelwerk.startwerte.json` übernommen.
 - Einstellungen haben einen Stichtag `ab`; maßgeblich ist der jüngste Wert mit `ab <= Datum`.
+
+## Nachträge Phase 3
+- **Quelle der Wahrheit** für Tabellen und Trigger ist `src/PropTax.Persistence/Schema/0001_initial.sql`;
+  dieses Dokument erläutert es. Neue Versionen nur als weiteres Skript (`0002_…`).
+- `periode.art` ∈ `UST | EUER`, `schluessel` = `2026-Q1` / `2026-03` / `2026` bzw. EÜR-Jahr.
+- `beleg_steuer` speichert zusätzlich `kennzahlen_json` und `begruendung_json` (Drill-down ohne Neuberechnung).
+- `import_lauf.art` ∈ `BELEGE | KURSE`; `datei_sha256` verhindert unbeabsichtigten Doppelimport.
+- `csv_mapping_profil.profil_json` speichert das komplette Mapping (Trennzeichen, Formate, Spalten, Standardwerte).
+- `geschaeftspartner.kategorie = NULL` bedeutet ungeklärt; solche Belege sind nicht buchbar.

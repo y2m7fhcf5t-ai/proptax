@@ -24,15 +24,15 @@ QuestPDF, ClosedXML, xUnit + coverlet.
 - Engine-Projekt referenziert weder UI noch Persistenz.
 
 ## Struktur
-- `src/PropTax.Domain` – Entitäten, Wertobjekte (`Money`, `CurrencyAmount`), keine Abhängigkeiten
-- `src/PropTax.TaxEngine` – Steuerlogik, nur Domain
-- `src/PropTax.Persistence` – SQLite, Protokoll, Festschreibung
-- `src/PropTax.Reporting` – PDF/XLSX/CSV/DATEV
-- `src/PropTax.App` – Avalonia-UI
-- `tests/PropTax.TaxEngine.Tests` – `Abnahme/` (Fälle 1–7), `Detail/`; Coverage-Gate Engine+Domain ≥ 90 % (Zeilen und Zweige)
-- `tests/PropTax.ArchitectureTests` – Schichten + Gleitkomma-Verbot
-- Regelwerk-Startwerte: `src/PropTax.TaxEngine/Startwerte/regelwerk.startwerte.json` (eingebettet)
-- Doku: `docs/architektur.md`, `docs/datenmodell.md`, `docs/steuerregeln.md`, `docs/adr/`
+- `src/PropTax.Domain` – Wertobjekte (`Money`, `CurrencyAmount`), Enums, `UstZeitraum`, `Laender`, GoBD (`Protokoll`, `Belegaenderung`)
+- `src/PropTax.TaxEngine` – Steuerlogik, Regelwerk-Startwerte (JSON), nur Domain
+- `src/PropTax.Persistence` – SQLite-Schema (`Schema/NNNN_*.sql`, eingebettet), Repositories, `Sitzung` (Unit of Work), DB-Protokoll
+- `src/PropTax.Application` – Use-Case-Services; Einstieg `Arbeitsbereich.Oeffne(datenordner)`
+- `src/PropTax.Reporting` – PDF/XLSX/CSV/DATEV (Phase 4/5, noch leer)
+- `src/PropTax.App` – Avalonia-UI (Views + ViewModels), kennt nur Application
+- Tests: `TaxEngine.Tests` (Abnahme/ + Detail/, Gate ≥ 90 %), `Persistence.Tests` (Trigger, Schema),
+  `Application.Tests` (Gate ≥ 80 % für Application+Persistence), `App.Tests` (Headless-UI, xunit v3), `ArchitectureTests`
+- Doku: `docs/architektur.md`, `docs/datenmodell.md`, `docs/steuerregeln.md`, `docs/adr/`, `docs/bilder/`
 - NuGet-Versionen zentral in `Directory.Packages.props`
 
 ## Befehle
@@ -42,6 +42,7 @@ dotnet test
 dotnet test tests/PropTax.TaxEngine.Tests        # inkl. Coverage-Report + Gate
 dotnet run --project src/PropTax.App
 dotnet run --project src/PropTax.App -- --selftest
+PROPTAX_SCREENSHOT=/pfad/belege.png dotnet test tests/PropTax.App.Tests   # Screenshot der Belegmaske
 dotnet publish src/PropTax.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
 ```
 CI: `.github/workflows/build.yml` (Ubuntu-Tests, Windows-Publish + Smoke-Test).
@@ -58,6 +59,15 @@ CI: `.github/workflows/build.yml` (Ubuntu-Tests, Windows-Publish + Smoke-Test).
 
 ## Repository
 GitHub `y2m7fhcf5t-ai/proptax` (öffentlich), Branch `main`.
+
+## Anwendungs-/UI-Konventionen
+- Datenordner = eine Buchhaltung: `proptax.db` + `belege/<sha[0..2]>/<sha>.<ext>`; Standard `%LOCALAPPDATA%\PropTax`,
+  gemerkt in `%APPDATA%\PropTax\datenordner.txt`.
+- Schema-Änderungen nur als neues Skript `000N_*.sql` (nie ausgelieferte Skripte ändern).
+- Protokoll-Schlüssel für Belege ist die DB-ID (`entitaet='beleg'`, `entitaet_id=<id>`).
+- Fachliche Fehler als `FachlicherFehler` (UI zeigt sie in der Statusleiste); UI-Code ruft nie SQL.
+- Storno = eigener Beleg mit `storno_von_id`, negiertem Betrag und negiertem Steuer-Snapshot im Zeitraum des Stornodatums;
+  das Original bleibt unverändert (Status „storniert“ wird abgeleitet).
 
 ## Persistenz-Konventionen
 - Geld in SQLite als INTEGER-Cent, Kurse/Sätze als TEXT-Dezimalstring (Details: docs/datenmodell.md).
