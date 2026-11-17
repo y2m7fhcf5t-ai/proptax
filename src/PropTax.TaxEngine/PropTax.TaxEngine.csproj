@@ -2,4 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PropTax.Domain\PropTax.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Startwerte\regelwerk.startwerte.json" LogicalName="PropTax.Startwerte.regelwerk.json" />
+  </ItemGroup>
 </Project>

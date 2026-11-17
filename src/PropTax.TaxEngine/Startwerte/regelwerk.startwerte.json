@@ -1,0 +1,102 @@
+{
+  "_hinweis": "Startwerte. KEINE Steuerberatung. Alle Regeln/Kennzahlen/Grenzen sind UNGEPRUEFT und vor produktivem Einsatz fachlich zu validieren (docs/steuerregeln.md).",
+  "regeln": [
+    {
+      "code": "EINGANG_DRITTLAND_SONST_LEIST", "prioritaet": 10,
+      "belegtypen": ["ChallengeGebuehr", "Reset", "Activation", "FundedGebuehr", "AboSoftware", "SonstigeAusgabe"],
+      "richtung": "Eingang", "partnerKategorie": "Drittland",
+      "leistungsart": "SonstigeLeistung", "steuerbarkeit": "Steuerbar", "leistungsort": "Inland (§3a Abs. 2 UStG)",
+      "steuerschuldner": "Empfaenger13bAbs2Nr1", "satzSchluessel": "STANDARD", "kennzahlSchluessel": "13B_ABS2_NR1",
+      "entstehung": "RechnungSpaetestensFolgemonat", "zaehltZu19Umsatz": false,
+      "rechtsgrundlage": "§3a Abs. 2, §13b Abs. 2 Nr. 1, Abs. 2 S. 1, Abs. 5 S. 1, Abs. 8 UStG", "status": "Ungeprueft"
+    },
+    {
+      "code": "EINGANG_EU_SONST_LEIST", "prioritaet": 10,
+      "belegtypen": ["ChallengeGebuehr", "Reset", "Activation", "FundedGebuehr", "AboSoftware", "SonstigeAusgabe"],
+      "richtung": "Eingang", "partnerKategorie": "Eu",
+      "leistungsart": "SonstigeLeistung", "steuerbarkeit": "Steuerbar", "leistungsort": "Inland (§3a Abs. 2 UStG)",
+      "steuerschuldner": "Empfaenger13bAbs1", "satzSchluessel": "STANDARD", "kennzahlSchluessel": "13B_ABS1",
+      "entstehung": "LeistungVaZeitraum", "zaehltZu19Umsatz": false,
+      "rechtsgrundlage": "§3a Abs. 2, §13b Abs. 1, Abs. 5 S. 1, Abs. 8 UStG", "status": "Ungeprueft"
+    },
+    {
+      "code": "EINGANG_INLAND", "prioritaet": 10,
+      "belegtypen": ["ChallengeGebuehr", "Reset", "Activation", "FundedGebuehr", "AboSoftware", "SonstigeAusgabe"],
+      "richtung": "Eingang", "partnerKategorie": "Inland",
+      "leistungsart": "SonstigeLeistung", "steuerbarkeit": "Steuerbar", "leistungsort": "Inland",
+      "steuerschuldner": "Leistender", "kennzahlSchluessel": "VST_RECHNUNG",
+      "entstehung": "LeistungUndRechnung", "zaehltZu19Umsatz": false,
+      "rechtsgrundlage": "§15 Abs. 1 S. 1 Nr. 1 UStG; kein Vorsteuerabzug bei §19", "status": "Ungeprueft"
+    },
+    {
+      "code": "PAYOUT_NICHT_STEUERBAR", "prioritaet": 10, "belegtypen": ["Payout"], "richtung": "Ausgang",
+      "bedingung": "ust.payout_behandlung=NICHT_STEUERBAR",
+      "leistungsart": "SonstigeLeistung", "steuerbarkeit": "NichtSteuerbar", "leistungsort": "Ausland (§3a Abs. 2 UStG, Sitz Prop-Firma) – TODO-STEUER O-04",
+      "steuerschuldner": "Leistender", "kennzahlSchluessel": "NICHT_STEUERBAR_UEBRIGE",
+      "entstehung": "Vereinnahmung", "zaehltZu19Umsatz": false,
+      "rechtsgrundlage": "TODO-STEUER O-04", "status": "Ungeprueft"
+    },
+    {
+      "code": "PAYOUT_STEUERBAR", "prioritaet": 10, "belegtypen": ["Payout"], "richtung": "Ausgang",
+      "bedingung": "ust.payout_behandlung=STEUERBAR",
+      "leistungsart": "SonstigeLeistung", "steuerbarkeit": "Steuerbar", "leistungsort": "Inland – TODO-STEUER O-04",
+      "steuerschuldner": "Leistender", "satzSchluessel": "STANDARD", "kennzahlSchluessel": "INLAND_REGELSATZ",
+      "entstehung": "Vereinnahmung", "zaehltZu19Umsatz": true,
+      "rechtsgrundlage": "TODO-STEUER O-04", "status": "Ungeprueft"
+    },
+    {
+      "code": "PAYOUT_KEIN_LEISTUNGSAUSTAUSCH", "prioritaet": 10, "belegtypen": ["Payout"], "richtung": "Ausgang",
+      "bedingung": "ust.payout_behandlung=KEIN_LEISTUNGSAUSTAUSCH",
+      "leistungsart": "KeinLeistungsaustausch", "steuerbarkeit": "KeinLeistungsaustausch", "leistungsort": "–",
+      "steuerschuldner": "Leistender", "entstehung": "Vereinnahmung", "zaehltZu19Umsatz": false,
+      "rechtsgrundlage": "TODO-STEUER O-04", "status": "Ungeprueft"
+    },
+    {
+      "code": "AUSGANG_INLAND_REGELSATZ", "prioritaet": 10, "belegtypen": ["Verkauf", "SonstigeEinnahme"],
+      "richtung": "Ausgang", "partnerKategorie": "Inland",
+      "leistungsart": "Lieferung", "steuerbarkeit": "Steuerbar", "leistungsort": "Inland",
+      "steuerschuldner": "Leistender", "satzSchluessel": "STANDARD", "kennzahlSchluessel": "INLAND_REGELSATZ",
+      "entstehung": "Vereinnahmung", "zaehltZu19Umsatz": true,
+      "rechtsgrundlage": "§1 Abs. 1 Nr. 1, §12 Abs. 1, §13 Abs. 1 Nr. 1 b, §20 UStG; §19 UStG bei KU", "status": "Ungeprueft"
+    }
+  ],
+  "steuersaetze": [
+    { "schluessel": "STANDARD", "satz": "0.19", "gueltigAb": "2007-01-01", "gueltigBis": "2020-06-30", "status": "Validiert" },
+    { "schluessel": "STANDARD", "satz": "0.16", "gueltigAb": "2020-07-01", "gueltigBis": "2020-12-31", "status": "Validiert" },
+    { "schluessel": "STANDARD", "satz": "0.19", "gueltigAb": "2021-01-01", "gueltigBis": null, "status": "Validiert" },
+    { "schluessel": "ERMAESSIGT", "satz": "0.07", "gueltigAb": "1983-07-01", "gueltigBis": "2020-06-30", "status": "Validiert" },
+    { "schluessel": "ERMAESSIGT", "satz": "0.05", "gueltigAb": "2020-07-01", "gueltigBis": "2020-12-31", "status": "Validiert" },
+    { "schluessel": "ERMAESSIGT", "satz": "0.07", "gueltigAb": "2021-01-01", "gueltigBis": null, "status": "Validiert" }
+  ],
+  "kennzahlen": [
+    { "jahr": 2025, "schluessel": "13B_ABS1", "kzBmg": "46", "kzSteuer": "47", "kzVorsteuer": "67", "bezeichnung": "Sonstige Leistungen EU-Unternehmer (§13b Abs. 1)", "status": "Ungeprueft" },
+    { "jahr": 2025, "schluessel": "13B_ABS2_NR1", "kzBmg": "52", "kzSteuer": "53", "kzVorsteuer": "67", "bezeichnung": "Leistungen im Ausland ansässiger Unternehmer (§13b Abs. 2 Nr. 1)", "status": "Ungeprueft" },
+    { "jahr": 2025, "schluessel": "VST_RECHNUNG", "kzBmg": null, "kzSteuer": null, "kzVorsteuer": "66", "bezeichnung": "Vorsteuer aus Rechnungen", "status": "Ungeprueft" },
+    { "jahr": 2025, "schluessel": "NICHT_STEUERBAR_UEBRIGE", "kzBmg": "45", "kzSteuer": null, "kzVorsteuer": null, "bezeichnung": "Übrige nicht steuerbare Umsätze (Leistungsort nicht im Inland)", "status": "Ungeprueft" },
+    { "jahr": 2025, "schluessel": "INLAND_REGELSATZ", "kzBmg": "81", "kzSteuer": null, "kzVorsteuer": null, "bezeichnung": "Steuerpflichtige Umsätze 19 %", "status": "Ungeprueft" },
+    { "jahr": 2026, "schluessel": "13B_ABS1", "kzBmg": "46", "kzSteuer": "47", "kzVorsteuer": "67", "bezeichnung": "Sonstige Leistungen EU-Unternehmer (§13b Abs. 1)", "status": "Ungeprueft" },
+    { "jahr": 2026, "schluessel": "13B_ABS2_NR1", "kzBmg": "52", "kzSteuer": "53", "kzVorsteuer": "67", "bezeichnung": "Leistungen im Ausland ansässiger Unternehmer (§13b Abs. 2 Nr. 1)", "status": "Ungeprueft" },
+    { "jahr": 2026, "schluessel": "VST_RECHNUNG", "kzBmg": null, "kzSteuer": null, "kzVorsteuer": "66", "bezeichnung": "Vorsteuer aus Rechnungen", "status": "Ungeprueft" },
+    { "jahr": 2026, "schluessel": "NICHT_STEUERBAR_UEBRIGE", "kzBmg": "45", "kzSteuer": null, "kzVorsteuer": null, "bezeichnung": "Übrige nicht steuerbare Umsätze (Leistungsort nicht im Inland)", "status": "Ungeprueft" },
+    { "jahr": 2026, "schluessel": "INLAND_REGELSATZ", "kzBmg": "81", "kzSteuer": null, "kzVorsteuer": null, "bezeichnung": "Steuerpflichtige Umsätze 19 %", "status": "Ungeprueft" }
+  ],
+  "grenzwerte19": [
+    { "jahr": 2025, "grenzeVorjahr": "25000", "grenzeLaufendesJahr": "100000", "rechtsgrundlage": "§19 Abs. 1 UStG i. d. F. ab 01.01.2025", "status": "Ungeprueft" },
+    { "jahr": 2026, "grenzeVorjahr": "25000", "grenzeLaufendesJahr": "100000", "rechtsgrundlage": "§19 Abs. 1 UStG i. d. F. ab 01.01.2025", "status": "Ungeprueft" }
+  ],
+  "besteuerungsarten": [
+    { "ab": "2000-01-01", "art": "Kleinunternehmer" }
+  ],
+  "einstellungen": [
+    { "schluessel": "ust.voranmeldungszeitraum", "wert": "Quartal", "ab": "2000-01-01" },
+    { "schluessel": "ust.dauerfristverlaengerung", "wert": "false", "ab": "2000-01-01" },
+    { "schluessel": "ust.payout_behandlung", "wert": "NICHT_STEUERBAR", "ab": "2000-01-01" },
+    { "schluessel": "ust.formular_rundung", "wert": "Abschneiden", "ab": "2000-01-01" },
+    { "schluessel": "erstattung.kurs", "wert": "ORIGINAL", "ab": "2000-01-01" },
+    { "schluessel": "betrag_ist.Payout", "wert": "BRUTTO", "ab": "2000-01-01" },
+    { "schluessel": "betrag_ist.Verkauf", "wert": "BRUTTO", "ab": "2000-01-01" },
+    { "schluessel": "betrag_ist.SonstigeEinnahme", "wert": "BRUTTO", "ab": "2000-01-01" },
+    { "schluessel": "euer.kurs_quelle", "wert": "Bmf", "ab": "2000-01-01" }
+  ],
+  "kurse": []
+}
