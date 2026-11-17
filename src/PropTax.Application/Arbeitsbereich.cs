@@ -34,6 +34,9 @@ public sealed class Arbeitsbereich
     public int SchemaVersion { get; private set; }
     internal Datenbank Db { get; set; }
 
+    /// <summary>Schließt alle gepoolten DB-Verbindungen (z. B. vor dem Löschen/Verschieben des Datenordners).</summary>
+    public static void VerbindungenSchliessen() => Datenbank.Freigeben();
+
     /// <summary>True, wenn die Datenbank im Ordner verschlüsselt ist (Passwortabfrage beim Start nötig).</summary>
     public static bool BenoetigtPasswort(string datenordner) => Datenbank.IstVerschluesselt(Path.Combine(datenordner, DateinameDb));
 

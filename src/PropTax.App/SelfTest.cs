@@ -7,6 +7,7 @@ namespace PropTax.App;
 /// <summary>CI-Smoke-Test: Engine, Migration einer temporären DB und Abnahmefall 1 über alle Schichten.</summary>
 internal static class SelfTest
 {
+
     public static int Ausfuehren()
     {
         var ordner = Path.Combine(Path.GetTempPath(), "proptax-selftest-" + Guid.NewGuid().ToString("N"));
@@ -27,13 +28,25 @@ internal static class SelfTest
             ab.Auswertungen.ExportiereNachweis(2026, xlsx, ExportFormat.Xlsx);
             var exportOk = new FileInfo(pdf).Length > 1000 && new FileInfo(xlsx).Length > 1000;
 
-            var ok = e.Bemessungsgrundlage.Betrag == 91.67m && e.Zahllast.Betrag == 17.42m && ab.SchemaVersion >= 2 && ab.Protokoll.PruefeKette() && exportOk;
-            Console.WriteLine(ok ? $"SELFTEST OK (Schema v{ab.SchemaVersion}, Zahllast {e.Zahllast}, PDF/XLSX ok)" : $"SELFTEST FEHLER ({e.Zahllast}, Export {exportOk})");
+            // Verschlüsselung (SQLite3MC-Native) und Sicherung/Prüfung.
+            const string pw = "selftest-passwort";
+            var sicherung = ab.Sicherheit.Aktivieren(pw, pw);
+            var ohne = false;
+            try { Arbeitsbereich.Oeffne(ordner, "selftest"); } catch (PasswortErforderlichException) { ohne = true; }
+            var mit = Arbeitsbereich.Oeffne(ordner, "selftest", passwort: pw);
+            var sicherungOk = mit.Sicherungen.Pruefe(sicherung) is { Ok: true, Manifest.Verschluesselt: true };
+            var kryptoOk = ohne && mit.Protokoll.PruefeKette() && sicherungOk;
+
+            var ok = e.Bemessungsgrundlage.Betrag == 91.67m && e.Zahllast.Betrag == 17.42m && ab.SchemaVersion >= 3 && exportOk && kryptoOk;
+            Console.WriteLine(ok
+                ? $"SELFTEST OK (PropTax {Arbeitsbereich.Version}, Schema v{ab.SchemaVersion}, Zahllast {e.Zahllast}, PDF/XLSX, Verschlüsselung, Sicherung)"
+                : $"SELFTEST FEHLER (Zahllast {e.Zahllast}, Export {exportOk}, Verschlüsselung/Sicherung {kryptoOk})");
             return ok ? 0 : 1;
         }
         finally
         {
-            try { Directory.Delete(ordner, true); } catch (IOException) { }
+            Arbeitsbereich.VerbindungenSchliessen();
+            try { Directory.Delete(ordner, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
     }
 }

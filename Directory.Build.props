@@ -7,6 +7,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InvariantGlobalization>false</InvariantGlobalization>
     <SatelliteResourceLanguages>de</SatelliteResourceLanguages>
+    <Version>1.0.0</Version>
+    <Product>PropTax</Product>
+    <Copyright>Erfassungs- und Berechnungswerkzeug – keine Steuerberatung</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
     <DebugType>none</DebugType>
