@@ -123,3 +123,17 @@ public class RegelwerkUndAuswertungTests
         Assert.Equal(Money.Euro(5m), new CurrencyAmount(5m, "EUR").InEuro(1.5m));
     }
 }
+
+public class LaenderTests
+{
+    [Theory]
+    [InlineData("DE", PartnerKategorie.Inland)]
+    [InlineData("ie", PartnerKategorie.Eu)]
+    [InlineData("AE", PartnerKategorie.Drittland)]
+    [InlineData("GB", PartnerKategorie.Drittland)]
+    [InlineData("US", PartnerKategorie.Drittland)]
+    public void Kategorie_aus_Land(string land, PartnerKategorie erwartet) => Assert.Equal(erwartet, Laender.KategorieAus(land));
+
+    [Fact]
+    public void Ohne_Land_ungeklaert() => Assert.Null(Laender.KategorieAus(" "));
+}

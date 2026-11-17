@@ -34,3 +34,10 @@ public sealed class PeriodeFestgeschriebenException(DateOnly datum)
 {
     public DateOnly Datum { get; } = datum;
 }
+
+/// <summary>Senke für Protokolleinträge (im Speicher oder Datenbank).</summary>
+public interface IProtokoll
+{
+    ProtokollEintrag Anhaengen(DateTimeOffset zeitpunkt, string benutzer, string entitaet, string entitaetId,
+        string aktion, string? feld, string? alt, string? neu, string begruendung);
+}

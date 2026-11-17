@@ -8,7 +8,7 @@ namespace PropTax.Domain.GoBD;
 /// festgeschriebene Belege werden ausschließlich durch Storno-/Korrekturbelege in offenen Zeiträumen berichtigt.
 /// Jede Operation wird mit Begründung protokolliert.
 /// </summary>
-public sealed class Belegaenderung(IPeriodenStatus perioden, Protokoll protokoll, string benutzer, TimeProvider zeit)
+public sealed class Belegaenderung(IPeriodenStatus perioden, IProtokoll protokoll, string benutzer, TimeProvider zeit)
 {
     private const string Entitaet = "beleg";
 

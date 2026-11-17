@@ -8,7 +8,7 @@ namespace PropTax.Domain.GoBD;
 /// Append-only-Änderungsprotokoll. Jeder Eintrag enthält den Hash des Vorgängers;
 /// nachträgliche Änderungen, Löschungen oder Lücken werden durch <see cref="PruefeKette()"/> erkannt.
 /// </summary>
-public sealed class Protokoll
+public sealed class Protokoll : IProtokoll
 {
     public const string StartHash = "0000000000000000000000000000000000000000000000000000000000000000";
     private readonly List<ProtokollEintrag> _eintraege;
@@ -25,10 +25,8 @@ public sealed class Protokoll
     public ProtokollEintrag Anhaengen(DateTimeOffset zeitpunkt, string benutzer, string entitaet, string entitaetId,
         string aktion, string? feld, string? alt, string? neu, string begruendung)
     {
-        var prev = _eintraege.Count == 0 ? StartHash : _eintraege[^1].Hash;
-        var e = new ProtokollEintrag(_eintraege.Count + 1, zeitpunkt, benutzer, entitaet, entitaetId, aktion,
-            feld, alt, neu, begruendung, prev, "");
-        e = e with { Hash = BerechneHash(e) };
+        var e = Naechster(_eintraege.Count == 0 ? null : _eintraege[^1], zeitpunkt, benutzer, entitaet, entitaetId,
+            aktion, feld, alt, neu, begruendung);
         _eintraege.Add(e);
         return e;
     }
@@ -47,7 +45,16 @@ public sealed class Protokoll
         return true;
     }
 
-    private static string BerechneHash(ProtokollEintrag e)
+    /// <summary>Erzeugt den Folgeeintrag (Nr, PrevHash, Hash) zum letzten Eintrag einer Kette.</summary>
+    public static ProtokollEintrag Naechster(ProtokollEintrag? letzter, DateTimeOffset zeitpunkt, string benutzer,
+        string entitaet, string entitaetId, string aktion, string? feld, string? alt, string? neu, string begruendung)
+    {
+        var e = new ProtokollEintrag((letzter?.Nr ?? 0) + 1, zeitpunkt, benutzer, entitaet, entitaetId, aktion,
+            feld, alt, neu, begruendung, letzter?.Hash ?? StartHash, "");
+        return e with { Hash = BerechneHash(e) };
+    }
+
+    public static string BerechneHash(ProtokollEintrag e)
     {
         var felder = new[]
         {
