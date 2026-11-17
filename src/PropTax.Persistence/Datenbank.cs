@@ -43,7 +43,8 @@ public sealed partial class Datenbank
     {
         if (!File.Exists(pfad) || new FileInfo(pfad).Length < 16) return false;
         var kopf = new byte[16];
-        using (var f = File.OpenRead(pfad)) f.ReadExactly(kopf);
+        // FileShare.ReadWrite: SQLite hält die Datei ggf. offen; unter Windows schlägt File.OpenRead dann fehl.
+        using (var f = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)) f.ReadExactly(kopf);
         return System.Text.Encoding.ASCII.GetString(kopf) != "SQLite format 3\0";
     }
 

@@ -50,6 +50,7 @@ public sealed class UiTests : IDisposable
 
     public void Dispose()
     {
+        Arbeitsbereich.VerbindungenSchliessen();
         try { Directory.Delete(_ordner, true); } catch (IOException) { }
     }
 

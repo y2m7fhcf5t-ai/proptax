@@ -58,6 +58,7 @@ public class VerschluesselungTests : IDisposable
         Assert.False(Datenbank.IstVerschluesselt(Path.Combine(_t.Ordner, "gibtsnicht.db")));
         File.WriteAllText(Path.Combine(_t.Ordner, "kurz.db"), "x");
         Assert.False(Datenbank.IstVerschluesselt(Path.Combine(_t.Ordner, "kurz.db")));
-        Assert.Equal(5, new Datenbank(ziel).Sitzung().Stammdaten.Partner().Count);
+        using var s = new Datenbank(ziel).Sitzung();
+        Assert.Equal(5, s.Stammdaten.Partner().Count);
     }
 }
