@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <ProjectReference Include="..\..\src\PropTax.Domain\PropTax.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PropTax.TaxEngine\PropTax.TaxEngine.csproj" />
+    <ProjectReference Include="..\..\src\PropTax.Persistence\PropTax.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\PropTax.Reporting\PropTax.Reporting.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

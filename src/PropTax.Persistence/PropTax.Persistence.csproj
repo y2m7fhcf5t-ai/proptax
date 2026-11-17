@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\PropTax.Domain\PropTax.Domain.csproj" />
+    <ProjectReference Include="..\PropTax.TaxEngine\PropTax.TaxEngine.csproj" />
+  </ItemGroup>
+</Project>
