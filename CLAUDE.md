@@ -12,7 +12,7 @@ Offline-Windows-Desktop-App, lokale SQLite-DB, GoBD-orientiert. Keine Steuerbera
 - Ein Commit pro abgeschlossenem Teilschritt.
 
 ## Stack (angenommen, siehe docs/adr/0001-technologie-stack.md)
-C# / .NET 10 LTS, Avalonia 12, CommunityToolkit.Mvvm, SQLite (Microsoft.Data.Sqlite / EF Core, optional SQLCipher),
+C# / .NET 10 LTS, Avalonia 12 (+ DataGrid), CommunityToolkit.Mvvm, Microsoft.Data.Sqlite.Core 11 + SQLite3 Multiple Ciphers + Dapper,
 QuestPDF, ClosedXML, xUnit + coverlet.
 
 ## Konventionen
@@ -46,7 +46,9 @@ dotnet run --project src/PropTax.App -- --selftest
 PROPTAX_SCREENSHOT=/pfad/belege.png PROPTAX_SCREENSHOT_DIR=/pfad dotnet test tests/PropTax.App.Tests   # Screenshots
 PROPTAX_PDF=/pfad/nachweis.pdf dotnet test tests/PropTax.Reporting.Tests   # Beispiel-PDF
 dotnet publish src/PropTax.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
+build/publish-windows.sh [Version]      # bzw. build/publish-windows.ps1 (inkl. Selbsttest)
 ```
+Release: Tag `v1.2.3` pushen → CI baut die Exe, prüft Selbsttest/Einzeldatei und hängt sie an ein GitHub-Release.
 CI: `.github/workflows/build.yml` (Ubuntu-Tests, Windows-Publish + Smoke-Test).
 
 ## Umgebung (Cloud-Container)
@@ -76,6 +78,13 @@ GitHub `y2m7fhcf5t-ai/proptax` (öffentlich), Branch `main`.
 - Fristen: `Fristen.VaFaelligkeit` + bundeseinheitliche `Feiertage`.
 - PDF: keine Sonderzeichen außerhalb der Standardschriften verwenden (z. B. kein ⚠), sonst wirft QuestPDF.
 - Dateinamen in Exporten nach Windows-Regeln bereinigen.
+
+## Sicherheit & Sicherung
+- Verschlüsselung per `PRAGMA rekey` (SQLite3MC); Passwort nur im Speicher (`Datenbank`), nie in DB/Protokoll/Dateien.
+- Verbindungs-Pooling ist aktiv; vor Datei-Operationen `Datenbank.Freigeben()` / `Arbeitsbereich.VerbindungenSchliessen()`.
+- Sicherung = ZIP (DB via Online-Backup-API, `belege/`, `manifest.json` mit SHA-256); Restore prüft vorher und legt
+  eine Sicherheitskopie an. Auto-Sicherung beim Schließen (`backup.anzahl`).
+- Jede `TODO-STEUER O-xx`-Markierung muss in `docs/steuerregeln.md` stehen (Test `OffeneSteuerpunkteTests`).
 
 ## Persistenz-Konventionen
 - Geld in SQLite als INTEGER-Cent, Kurse/Sätze als TEXT-Dezimalstring (Details: docs/datenmodell.md).

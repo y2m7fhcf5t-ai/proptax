@@ -140,3 +140,8 @@ erDiagram
 - `0002_auswertungen.sql` ergänzt Einstellungen, falls nicht vorhanden: `ust.va_frist_tag` (10), `ust19.warnschwelle` (0.8),
   `euer.ust_zahlung` (`FAELLIGKEIT_10_TAGE`). Manueller Vorjahresumsatz: `ust19.vorjahresumsatz.<jahr>`.
 - `euer_zeilen_mapping` wird vom Nutzer gepflegt (leer ausgeliefert).
+
+## Nachträge Phase 5 (Schema v3)
+- `0003_sicherung.sql`: Einstellung `backup.anzahl` (30) für die Aufbewahrung automatischer Sicherungen.
+- Die Datenbankdatei kann mit SQLite3 Multiple Ciphers verschlüsselt sein (Standard-Cipher der Bibliothek);
+  Sicherungen enthalten die DB im selben Verschlüsselungszustand.

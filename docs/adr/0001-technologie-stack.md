@@ -58,3 +58,8 @@ Vorgeschlagen war u. a. „.NET 8“. Dessen Support endete am **10.11.2026**. D
 ### Fallback
 Option A (Python + PySide6), falls die spätere Wartung durch eine Person erfolgen soll,
 die ausschließlich Python beherrscht.
+
+## Nachtrag Phase 5
+- Verschlüsselung über **SQLite3 Multiple Ciphers** (MIT, gepflegt) statt des veralteten `SQLitePCLRaw.bundle_e_sqlcipher`;
+  dafür `Microsoft.Data.Sqlite.Core` 11 (net10-kompatibel, SQLitePCLRaw 3.x).
+- Executable: ca. 59 MB, eine Datei.

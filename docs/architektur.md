@@ -60,6 +60,15 @@ PDF (QuestPDF, Community-Lizenz), XLSX (ClosedXML) und ZIP. Jeder Export wird pr
 ![USt-VA](bilder/ustva.png)
 ![Dashboard](bilder/dashboard.png)
 
+## Sicherheit und Datensicherung (Phase 5)
+- **Verschlüsselung:** SQLite3 Multiple Ciphers über `Microsoft.Data.Sqlite.Core` (`Password=` → `PRAGMA key`,
+  Umschlüsseln per `PRAGMA rekey`). Startablauf: verschlüsselte DB erkannt (Datei-Header) → Passwortfenster →
+  `Arbeitsbereich.Oeffne(..., passwort)`. Belegdateien bleiben unverschlüsselt (dokumentierte Grenze).
+- **Sicherung:** `SicherungService` – konsistente Kopie per Online-Backup-API (behält Schlüssel), ZIP mit Manifest
+  und SHA-256 je Datei; Prüfung vor Wiederherstellung; Sicherheitskopie; Protokolleintrag; Auto-Sicherung beim Schließen.
+
+![Einstellungen](bilder/einstellungen.png)
+
 ## ERiC-Vorbereitung
 Die USt-VA wird als abstraktes Modell `UstVaDatensatz` (Zeitraum, Kennzahl → Betrag) erzeugt.
 Eine spätere Klasse `EricUebermittlung` in einem eigenen Projekt (`PropTax.Elster`) bindet die
@@ -67,5 +76,5 @@ ERiC-C-Bibliothek per P/Invoke an. Engine und UI bleiben dabei unverändert.
 
 ## Build & Auslieferung
 - Entwicklung und Tests: Linux oder Windows (`dotnet test`)
-- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 59 MB inkl. SQLite und QuestPDF; `IncludeAllContentForSelfExtract` bündelt die PDF-Schriften)
+- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 59 MB inkl. SQLite3MC und QuestPDF; `IncludeAllContentForSelfExtract` bündelt die PDF-Schriften; CI prüft „genau eine Datei“)
 - CI: `.github/workflows/build.yml` mit Tests auf Ubuntu, Publish und Smoke-Test (`--selftest`) auf `windows-latest`
