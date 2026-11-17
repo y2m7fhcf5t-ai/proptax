@@ -243,7 +243,16 @@ public class AuswertungTests : Basis
         Ab.Auswertungen.ExportiereTabelle(va, x, ExportFormat.Xlsx);
         Ab.Auswertungen.ExportiereTabelle(euer, c, ExportFormat.Csv);
         Assert.Contains("Gewinn/Verlust", File.ReadAllText(c));
-        Assert.Throws<FachlicherFehler>(() => Ab.Auswertungen.ExportiereTabelle(va, x, ExportFormat.Pdf));
+        Ab.Auswertungen.ExportiereTabelle(euer, Path.Combine(Ordner, "euer.pdf"), ExportFormat.Pdf);
+        Assert.True(new FileInfo(Path.Combine(Ordner, "euer.pdf")).Length > 1000);
+        Assert.Throws<FachlicherFehler>(() => Ab.Auswertungen.ExportiereTabelle(va, x, ExportFormat.Zip));
+
+        var belege = Ab.Auswertungen.BelegTabelle();
+        Assert.Equal("C1", belege.Zeilen.Single()[0]);
+        Assert.Equal(17.42m, belege.Zeilen.Single()[10]);
+        var prot = Ab.Auswertungen.ProtokollTabelle();
+        Assert.Contains("intakt", prot.Fussnoten![0]);
+        Ab.Auswertungen.ExportiereTabelle(prot, Path.Combine(Ordner, "protokoll.xlsx"), ExportFormat.Xlsx);
     }
 }
 

@@ -90,5 +90,12 @@ public class ExportTests
         Assert.StartsWith("Kz;Bezeichnung;Betrag;Anzahl;Datum", text);
         Assert.Contains("52;\"Leistungen; Ausland\";91,67;1;31.03.2026", text);
         Assert.Contains("53;;17,42;1;", text);
+
+        using var pdf = new MemoryStream();
+        TabellenExport.Pdf(t, pdf, "Untertitel");
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdf.ToArray(), 0, 5));
+        using var pdf2 = new MemoryStream();
+        TabellenExport.Pdf(t with { Fussnoten = ["Hinweis"], Zeilen = [["x"]] }, pdf2);
+        Assert.True(pdf2.Length > 1000);
     }
 }

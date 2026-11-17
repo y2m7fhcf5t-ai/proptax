@@ -111,6 +111,8 @@ public static class NachweisExport
 
 public static class TabellenExport
 {
+    static TabellenExport() => QuestPDF.Settings.License = LicenseType.Community;
+
     /// <summary>Schreibt eine Tabelle als XLSX (Titel, Kopf, Daten, optionale Summenzeile, Fußnoten).</summary>
     public static void Xlsx(Tabelle t, Stream ziel, IReadOnlyCollection<int>? summenSpalten = null)
     {
@@ -155,6 +157,52 @@ public static class TabellenExport
         ws.SheetView.FreezeRows(3);
         ws.Columns().AdjustToContents(3, Math.Max(3, r), 8, 60);
         wb.SaveAs(ziel);
+    }
+
+    /// <summary>Tabelle als PDF (A4 quer, Kopfzeile wiederholt, Fußnoten und Seitenzahlen).</summary>
+    public static void Pdf(Tabelle t, Stream ziel, string? untertitel = null)
+    {
+        var de = CultureInfo.GetCultureInfo("de-DE");
+        static bool Zahl(object? v) => v is decimal or int or long;
+        Document.Create(doc => doc.Page(page =>
+        {
+            page.Size(PageSizes.A4.Landscape());
+            page.Margin(24);
+            page.DefaultTextStyle(x => x.FontSize(8));
+            page.Header().Column(c =>
+            {
+                c.Item().Text(t.Titel).FontSize(13).SemiBold();
+                if (untertitel is not null) c.Item().Text(untertitel);
+            });
+            page.Content().PaddingTop(8).Column(c =>
+            {
+                c.Item().Table(tab =>
+                {
+                    tab.ColumnsDefinition(cd => { foreach (var _ in t.Kopf) cd.RelativeColumn(); });
+                    tab.Header(h => { foreach (var k in t.Kopf) h.Cell().Background(Colors.Grey.Lighten3).Padding(2).Text(k).SemiBold(); });
+                    foreach (var z in t.Zeilen)
+                        for (var i = 0; i < t.Kopf.Count; i++)
+                        {
+                            var v = i < z.Count ? z[i] : null;
+                            var text = v switch
+                            {
+                                null => "",
+                                decimal d => d.ToString("N2", de),
+                                DateOnly d => d.ToString("dd.MM.yyyy", de),
+                                _ => Convert.ToString(v, de) ?? "",
+                            };
+                            var zelle = tab.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(2);
+                            if (Zahl(v)) zelle.AlignRight().Text(text); else zelle.Text(text);
+                        }
+                });
+                foreach (var f in t.Fussnoten ?? []) c.Item().PaddingTop(6).Text(f).Italic();
+            });
+            page.Footer().Row(r =>
+            {
+                r.RelativeItem().Text(NachweisExport.Hinweis).FontSize(7).FontColor(Colors.Grey.Darken1);
+                r.ConstantItem(60).AlignRight().Text(x => { x.Span("Seite "); x.CurrentPageNumber(); x.Span(" / "); x.TotalPages(); });
+            });
+        })).GeneratePdf(ziel);
     }
 
     /// <summary>CSV (Semikolon, de-DE-Zahlen, UTF-8 mit BOM für Excel).</summary>

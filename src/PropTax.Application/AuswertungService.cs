@@ -398,14 +398,43 @@ public sealed class AuswertungService(Arbeitsbereich ab)
         return new Tabelle($"EÜR {jahr} – {e.Betrieb}", ["Art", "Kategorie", "Anlage-EÜR-Zeile", "Betrag EUR", "Positionen"], zeilen, e.Hinweise);
     }
 
-    /// <summary>Exportiert eine Auswertungstabelle als XLSX oder CSV.</summary>
+    /// <summary>Belegliste (optional gefiltert) mit Steuerergebnis je Beleg.</summary>
+    public Tabelle BelegTabelle(BelegFilter? filter = null)
+    {
+        var belege = ab.Belege.Liste(filter);
+        var zeilen = belege.Select(b => (IReadOnlyList<object?>)[
+            b.Daten.Belegnummer, b.Daten.Leistungsdatum, b.Daten.Zahlungsdatum, b.BetriebName, b.PartnerName, b.Daten.Typ.ToString(),
+            b.Daten.Betrag.Betrag, b.Daten.Betrag.Waehrung, b.Steuer?.Kurs, b.Steuer?.Bemessungsgrundlage.Betrag, b.Steuer?.Steuer.Betrag,
+            b.Steuer?.Vorsteuer.Betrag, b.Steuer?.Zeitraum.ToString(),
+            b.StornoVonId is not null ? "Storno" : b.IstStorniert ? "Storniert" : b.Status.ToString(), b.AnzahlDokumente, b.Daten.Notiz]).ToList();
+        return new Tabelle("Belegliste", ["Beleg", "Leistung", "Zahlung", "Betrieb", "Partner", "Typ", "Betrag", "Whg", "Kurs", "BMG €", "USt €",
+            "VSt €", "Zeitraum", "Status", "Dok.", "Notiz"], zeilen, [$"{zeilen.Count} Belege · erstellt {ab.Jetzt.ToLocalTime():dd.MM.yyyy HH:mm}"]);
+    }
+
+    /// <summary>Änderungsprotokoll inkl. Hashes und Ergebnis der Kettenprüfung (GoBD-Nachvollziehbarkeit).</summary>
+    public Tabelle ProtokollTabelle()
+    {
+        var eintraege = ab.Protokoll.Alle();
+        var ok = ab.Protokoll.PruefeKette();
+        var zeilen = eintraege.Select(e => (IReadOnlyList<object?>)[
+            e.Nr, e.Zeitpunkt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss", De), e.Benutzer, e.Entitaet, e.EntitaetId, e.Aktion,
+            e.Feld, e.Alt, e.Neu, e.Begruendung, e.Hash[..16]]).ToList();
+        return new Tabelle("Änderungsprotokoll", ["Nr", "Zeitpunkt", "Benutzer", "Objekt", "ID", "Aktion", "Feld", "Alt", "Neu", "Begründung", "Hash (gekürzt)"],
+            zeilen, [ok ? $"Hash-Kette intakt ({eintraege.Count} Einträge)." : "ACHTUNG: Hash-Kette verletzt!"]);
+    }
+
+    /// <summary>Exportiert eine Tabelle als XLSX, CSV oder PDF.</summary>
     public void ExportiereTabelle(Tabelle t, string ziel, ExportFormat format)
     {
         using (var f = File.Create(ziel))
         {
-            if (format == ExportFormat.Xlsx) TabellenExport.Xlsx(t, f);
-            else if (format == ExportFormat.Csv) TabellenExport.Csv(t, f);
-            else throw new FachlicherFehler($"Format {format} für Tabellen nicht unterstützt.");
+            switch (format)
+            {
+                case ExportFormat.Xlsx: TabellenExport.Xlsx(t, f); break;
+                case ExportFormat.Csv: TabellenExport.Csv(t, f); break;
+                case ExportFormat.Pdf: TabellenExport.Pdf(t, f, $"{ab.Stammdaten.Unternehmen()} · {ab.Jetzt.ToLocalTime():dd.MM.yyyy HH:mm}"); break;
+                default: throw new FachlicherFehler($"Format {format} für Tabellen nicht unterstützt.");
+            }
         }
         Protokolliere("auswertung", t.Titel, $"{format}: {Path.GetFileName(ziel)}");
     }
