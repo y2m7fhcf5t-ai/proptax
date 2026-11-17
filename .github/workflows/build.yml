@@ -19,11 +19,13 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet build -c Release
-      - run: dotnet test -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+      # Coverage-Gate (Engine + Domain >= 90 %) ist im Testprojekt konfiguriert und lässt den Job bei Unterschreitung scheitern.
+      - run: dotnet test -c Release --no-build
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage
-          path: TestResults/**/coverage.cobertura.xml
+          path: tests/**/TestResults/coverage.cobertura.xml
 
   windows:
     runs-on: windows-latest

@@ -29,7 +29,9 @@ QuestPDF, ClosedXML, xUnit + coverlet.
 - `src/PropTax.Persistence` – SQLite, Protokoll, Festschreibung
 - `src/PropTax.Reporting` – PDF/XLSX/CSV/DATEV
 - `src/PropTax.App` – Avalonia-UI
-- `tests/PropTax.TaxEngine.Tests`, `tests/PropTax.ArchitectureTests` (Schichten + Gleitkomma-Verbot)
+- `tests/PropTax.TaxEngine.Tests` – `Abnahme/` (Fälle 1–7), `Detail/`; Coverage-Gate Engine+Domain ≥ 90 % (Zeilen und Zweige)
+- `tests/PropTax.ArchitectureTests` – Schichten + Gleitkomma-Verbot
+- Regelwerk-Startwerte: `src/PropTax.TaxEngine/Startwerte/regelwerk.startwerte.json` (eingebettet)
 - Doku: `docs/architektur.md`, `docs/datenmodell.md`, `docs/steuerregeln.md`, `docs/adr/`
 - NuGet-Versionen zentral in `Directory.Packages.props`
 
@@ -37,7 +39,7 @@ QuestPDF, ClosedXML, xUnit + coverlet.
 ```bash
 dotnet build
 dotnet test
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test tests/PropTax.TaxEngine.Tests        # inkl. Coverage-Report + Gate
 dotnet run --project src/PropTax.App
 dotnet run --project src/PropTax.App -- --selftest
 dotnet publish src/PropTax.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/win-x64
@@ -46,6 +48,16 @@ CI: `.github/workflows/build.yml` (Ubuntu-Tests, Windows-Publish + Smoke-Test).
 
 ## Umgebung (Cloud-Container)
 .NET-SDK via `apt-get install dotnet-sdk-10.0` (builds.dotnet.microsoft.com ist gesperrt, nuget.org erreichbar).
+
+## Engine-Konventionen
+- Einstiegspunkte: `Steuerermittlung.Ermittle`, `UstVaAggregation.Berechne`, `Kleinunternehmergrenze.Pruefe`,
+  GoBD: `Belegaenderung`, `Protokoll` (Domain).
+- Neue fachliche Regel = neuer Eintrag in Regeltabelle/JSON + Test + Zeile in `docs/steuerregeln.md`; kein `if` auf Länder/Firmen im Code.
+- Fehlende Stammdaten (Kurs, Kennzahl, Grenzwert, Einstellung) → `RegelwerkException`, niemals stiller Default.
+- Tests: Helfer `T.NeuesRegelwerk()` (Startwerte + Test-Kurse USD 03–05/2026).
+
+## Repository
+GitHub `y2m7fhcf5t-ai/proptax` (öffentlich), Branch `main`.
 
 ## Persistenz-Konventionen
 - Geld in SQLite als INTEGER-Cent, Kurse/Sätze als TEXT-Dezimalstring (Details: docs/datenmodell.md).

@@ -42,8 +42,8 @@ erDiagram
   BETRIEB { int id PK  int unternehmen_id FK  text name  text kurzzeichen  int aktiv }
   GESCHAEFTSPARTNER { int id PK  text name  text land_iso  text kategorie  text ust_idnr  text tax_id  text std_steuerschluessel  int ist_prop_firma  int aktiv }
   BELEG { int id PK  text belegnummer  int betrieb_id FK  int partner_id FK  text belegtyp  text richtung  text rechnungsdatum  text leistungsdatum  text zahlungsdatum  int betrag_fw  text waehrung  text bankkurs  int betrag_eur_bank  int euer_kategorie_id FK  text status  int storno_von_id FK  int korrektur_von_id FK  int bezug_beleg_id FK  int import_lauf_id FK  text dubletten_schluessel  text notiz }
-  BELEG_STEUER { int id PK  int beleg_id FK  int regel_id FK  text leistungsart  text leistungsort  text steuerbarkeit  text steuerschuldner  int satz_id FK  text satz  int kurs_id FK  text kurs  int bmg_eur  int steuer_eur  int vorsteuer_eur  text ust_periode  int kennzahl_mapping_id FK  int ist_manuell  text begruendung  text berechnet_am  text engine_version }
-  STEUERREGEL { int id PK  text code  int prioritaet  text partner_kategorie  text belegtyp  text leistungsart  text gueltig_ab  text gueltig_bis  text steuerbarkeit  text leistungsort  text steuerschuldner  text satz_schluessel  text kennzahl_schluessel  text entstehung  text rechtsgrundlage  text status }
+  BELEG_STEUER { int id PK  int beleg_id FK  int regel_id FK  text leistungsart  text leistungsort  text steuerbarkeit  text steuerschuldner  int satz_id FK  text satz  int kurs_id FK  text kurs  text besteuerungsart  text kennzahl_schluessel  text entstehungsdatum  int bmg_eur  int steuer_eur  int vorsteuer_eur  int umsatz19_eur  text ust_periode  text begruendung_kette  int kennzahl_mapping_id FK  int ist_manuell  text begruendung  text berechnet_am  text engine_version }
+  STEUERREGEL { int id PK  text code  int prioritaet  text belegtypen  text richtung  text partner_kategorie  text bedingung  text gueltig_ab  text gueltig_bis  text leistungsart  text steuerbarkeit  text leistungsort  text steuerschuldner  text satz_schluessel  text kennzahl_schluessel  text entstehung  int zaehlt_zu_19_umsatz  text rechtsgrundlage  text status }
   STEUERSATZ { int id PK  text schluessel  text satz  text gueltig_ab  text gueltig_bis  text status }
   KENNZAHL_MAPPING { int id PK  int jahr  text schluessel  text kz_bmg  text kz_steuer  text kz_vorsteuer  text bezeichnung  text status }
   WECHSELKURS { int id PK  text waehrung  text monat  text kurs  text quelle  int import_lauf_id  text status }
@@ -71,7 +71,7 @@ erDiagram
 - **belegvorlage**: für wiederkehrende Belege (z. B. > 250 gleichartige Challenge-Rechnungen).
 
 ### Belege
-- **beleg.belegtyp**: `CHALLENGE_GEBUEHR | RESET | ACTIVATION | FUNDED_GEBUEHR | ABO_SOFTWARE | PAYOUT | ERSTATTUNG | SONSTIGE_AUSGABE | SONSTIGE_EINNAHME`
+- **beleg.belegtyp**: `ChallengeGebuehr | Reset | Activation | FundedGebuehr | AboSoftware | Payout | Erstattung | Verkauf | SonstigeAusgabe | SonstigeEinnahme` (Enum-Namen wie im Code)
 - **beleg.richtung**: `EINGANG` (Leistungsbezug) | `AUSGANG` (eigene Leistung/Einnahme)
 - **Drei Daten:** `rechnungsdatum`, `leistungsdatum` und `zahlungsdatum`. Die EÜR nutzt das Zahlungsdatum (§11 EStG),
   die USt-Periode wird über `steuerregel.entstehung` bestimmt (siehe `docs/steuerregeln.md`, O-07).
@@ -91,7 +91,9 @@ erDiagram
   Die höchste `prioritaet` gewinnt, bei Gleichstand liefert die Engine einen Fehler (keine stille Auswahl).
   - `steuerbarkeit`: `STEUERBAR | NICHT_STEUERBAR | KEIN_LEISTUNGSAUSTAUSCH`
   - `steuerschuldner`: `LEISTENDER | EMPFAENGER_13B_ABS1 | EMPFAENGER_13B_ABS2_NR1`
-  - `entstehung`: `LEISTUNG_VA_ZEITRAUM | RECHNUNG_SPAETESTENS_FOLGEMONAT | ZAHLUNG | VEREINNAHMUNG`
+  - `entstehung`: `LeistungVaZeitraum | RechnungSpaetestensFolgemonat | LeistungUndRechnung | Vereinnahmung`
+  - `belegtypen`: JSON-Liste, leer = alle; `bedingung`: optional `einstellungsschluessel=wert` (z. B. Payout-Behandlung)
+  - `zaehlt_zu_19_umsatz`: Beitrag zum Gesamtumsatz nach §19
 - **kennzahl_mapping**: `schluessel` (z. B. `13B_ABS1_SONST_LEIST`) → Kz je Jahr. Startwerte sind als `UNGEPRUEFT` markiert.
 - **wechselkurs**: `quelle` ∈ `BMF | BANK | MANUELL`. Pro (`waehrung`, `monat`, `quelle`) gibt es genau einen Kurs (UNIQUE).
   Die Notation lautet `1 EUR = kurs Fremdwährung`.
@@ -108,8 +110,17 @@ erDiagram
 ### Einstellungen (Schlüssel, Startwerte)
 | Schlüssel | Startwert | Hinweis |
 |---|---|---|
-| `ust.voranmeldungszeitraum` | `MONAT` | konfigurierbar |
+| `ust.voranmeldungszeitraum` | `Quartal` | laut Nutzer vierteljährlich |
 | `ust.dauerfristverlaengerung` | `false` | wird laut Nutzer nicht genutzt; Funktion bleibt abschaltbar vorhanden |
-| `ust.payout_behandlung` | `NICHT_STEUERBAR` | `TODO-STEUER` O-04 |
-| `euer.kurs_quelle` | `BMF` | alternativ `BANK` |
+| `ust.payout_behandlung` | `NICHT_STEUERBAR` | `NICHT_STEUERBAR \| STEUERBAR \| KEIN_LEISTUNGSAUSTAUSCH`, O-04 |
+| `ust.formular_rundung` | `Abschneiden` | O-08 |
+| `erstattung.kurs` | `ORIGINAL` | `ORIGINAL \| ERSTATTUNGSMONAT`, O-06 |
+| `betrag_ist.<Belegtyp>` | `BRUTTO` | `BRUTTO \| NETTO`, O-10 |
+| `euer.kurs_quelle` | `Bmf` | alternativ `Bank` |
 | `ui.benutzer` | `Inhaber` | Name im Protokoll |
+
+## Nachträge Phase 2
+- Engine-Modelle (`Steuerregel`, `Steuersatz`, `Kennzahlzuordnung`, `Wechselkurs`, `Grenzwert19`, `Einstellung`)
+  bilden die Tabellen 1:1 ab; die Persistenz implementiert in Phase 3 `IRegelwerk` gegen SQLite.
+- Startwerte werden beim Anlegen einer neuen DB aus `regelwerk.startwerte.json` übernommen.
+- Einstellungen haben einen Stichtag `ab`; maßgeblich ist der jüngste Wert mit `ab <= Datum`.

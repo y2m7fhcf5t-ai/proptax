@@ -79,6 +79,7 @@ public sealed class Steuerermittlung(IRegelwerk regelwerk)
         var satz = u?.Satz ?? oe.Satz;
 
         // Berechnung mit den Merkmalen des Ursprungsbelegs (Richtung, Typ, Besteuerungsart), dann negiert.
+        // TODO-STEUER O-11: Besteuerungsart des Ursprungsbelegs maßgeblich, auch nach Wechsel KU <-> Regel.
         var basisBeleg = original with { Betrag = b.Betrag, AusgewieseneUst = b.AusgewieseneUst };
         var p = Berechne(basisBeleg, regel, oe.Besteuerungsart, eur, satz, datum, log);
         var negiert = new Betraege(-p.Bmg, -p.Steuer, -p.Vorsteuer, -p.Umsatz19, p.KeineKennzahlen);
@@ -199,7 +200,7 @@ public sealed class Steuerermittlung(IRegelwerk regelwerk)
         }
 
         var satzWert = PflichtSatz(satz, regel);
-        // TODO-STEUER: Brutto/Netto-Interpretation des Betrags je Belegtyp konfigurierbar.
+        // TODO-STEUER O-10: Brutto/Netto-Interpretation des Betrags je Belegtyp konfigurierbar.
         var modus = regelwerk.Einstellung($"betrag_ist.{b.Typ}", datum);
         Money bmg, st;
         switch (modus)
