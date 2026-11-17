@@ -32,7 +32,7 @@ Die Regeln werden durch `tests/PropTax.ArchitectureTests` erzwungen. Dort ist au
 ## Engine-Prinzipien
 - **Rein funktional:** Eingabe Beleg + Regelkontext → Ausgabe `SteuerErgebnis`. Keine I/O.
 - **Datengetrieben:** Regeln, Sätze, Kurse, Kennzahlen und Grenzwerte kommen über Schnittstellen
-  (`IRegelQuelle` u. a., Phase 2). Es gibt keine fachlichen Konstanten im Code.
+  (`IRegelwerk`; Implementierungen `InMemoryRegelwerk`, DB über `RegelwerkRepository.Laden`). Es gibt keine fachlichen Konstanten im Code.
 - **Erklärbar:** Jedes Ergebnis enthält Regel-ID, Kurs, Satz, Kennzahl und eine Begründungskette
   für den Drill-down.
 - **Übersteuerbar:** Manuelle Übersteuerung ist ein eigenes Eingabeobjekt mit Pflicht-Begründung.
@@ -59,5 +59,5 @@ ERiC-C-Bibliothek per P/Invoke an. Engine und UI bleiben dabei unverändert.
 
 ## Build & Auslieferung
 - Entwicklung und Tests: Linux oder Windows (`dotnet test`)
-- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 47 MB)
+- Windows-Executable: `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` (ca. 48 MB inkl. SQLite)
 - CI: `.github/workflows/build.yml` mit Tests auf Ubuntu, Publish und Smoke-Test (`--selftest`) auf `windows-latest`
